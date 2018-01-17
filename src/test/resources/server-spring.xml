@@ -16,7 +16,7 @@
     <bean id="rpcServer" class="com.yunzhitan.server.RpcServer">
         <constructor-arg  name="serverAddress"    value="${server1.address}"/>
         <constructor-arg  name="serviceRegistry"  ref="serviceRegistry"/>
-        <constructor-arg  name="protocal"         value="PROTOSTUFFSERIALIZE"/>
+        <constructor-arg  name="protocal"         value="PROTOSTUFF"/>
     </bean>
 
 </beans>

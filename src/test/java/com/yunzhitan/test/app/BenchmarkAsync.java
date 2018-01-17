@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class BenchmarkAsync {
     public static void main(String[] args) throws InterruptedException {
         ServiceDiscovery serviceDiscovery = new ServiceDiscovery("127.0.0.1:2181");
-        final RpcClient rpcClient = new RpcClient(serviceDiscovery, RpcProtocal.PROTOSTUFFSERIALIZE);
+        final RpcClient rpcClient = new RpcClient(serviceDiscovery, RpcProtocal.PROTOSTUFF);
 
         int threadNum = 10;
         final int requestNum = 20;

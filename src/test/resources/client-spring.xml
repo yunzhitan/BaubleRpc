@@ -13,7 +13,7 @@
 
     <bean id="rpcClient" class="com.yunzhitan.client.RpcClient">
         <constructor-arg  name="serviceDiscovery" ref="serviceDiscovery"/>
-        <constructor-arg name="rpcProtocal" value="PROTOSTUFFSERIALIZE" />
+        <constructor-arg name="rpcProtocal" value="PROTOSTUFF" />
     </bean>
 
 </beans>

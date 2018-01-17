@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.yunzhitan.Util.AddressUtil;
+import com.yunzhitan.Util.NetsUtils;
 import com.yunzhitan.client.ConnectManage;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
@@ -75,7 +75,7 @@ public class ServiceDiscovery {
             List<InetSocketAddress> dataList = new ArrayList<>();
             for (String node : nodeList) {
                 byte[] bytes = zk.getData(Constant.ZK_REGISTRY_PATH + "/" + node, false, null);
-                dataList.add(AddressUtil.getSocketAddress(new String(bytes)));
+                dataList.add(NetsUtils.toAddress(new String(bytes)));
             }
             logger.debug("node data: {}", dataList);
             this.dataList = dataList;

@@ -12,32 +12,26 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
+@ChannelHandler.Sharable
 public class ConsumerHandler extends SimpleChannelInboundHandler<RpcResponse> {
     private static final Logger logger = LoggerFactory.getLogger(ConsumerHandler.class);
 
     private final Map<String, RPCFuture> pendingRPC = new ConcurrentHashMap<>();
 
-    private volatile Channel channel;
-    private SocketAddress remoteAddress;
-
-    public Channel getChannel() {
-        return channel;
-    }
+    private volatile ChannelHandlerContext ctx;
 
     public SocketAddress getRemoteAddress() {
-        return remoteAddress;
+        return ctx.channel().remoteAddress();
+    }
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        this.ctx = ctx;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        this.remoteAddress = this.channel.remoteAddress();
-    }
-
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-        this.channel = ctx.channel();
     }
 
     @Override
@@ -57,14 +51,14 @@ public class ConsumerHandler extends SimpleChannelInboundHandler<RpcResponse> {
     }
 
     public void close() {
-        channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+        ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
 
     public RPCFuture sendRequest(RpcRequest request,Boolean isAsync) {
         final CountDownLatch latch = new CountDownLatch(1);
         RPCFuture rpcFuture = new RPCFuture(request,isAsync);
         pendingRPC.put(request.getRequestId(), rpcFuture);
-        channel.writeAndFlush(request).addListener((ChannelFutureListener) future -> latch.countDown());
+        ctx.writeAndFlush(request).addListener((ChannelFutureListener) future -> latch.countDown());
         try {
             latch.await();
         } catch (InterruptedException e) {

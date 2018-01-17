@@ -16,7 +16,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -44,16 +47,24 @@ public class ServiceTest {
     }
 
     @Test
-    public void helloPersonTest() {
-        PersonService personService = RpcClient.create(PersonService.class);
-        int num = 20;
+    public void helloPersonTest() throws Exception{
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        int num = 10;
+        CountDownLatch downLatch = new CountDownLatch(num);
         long startTime = System.currentTimeMillis();
-        List<Person> persons = personService.getTestPerson("xiaoming", num);
+        for(int i = 0; i < num; ++i) {
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    PersonService personService = RpcClient.create(PersonService.class);
+                    personService.pressTest();
+                    downLatch.countDown();
+                }
+            });
+        }
+        downLatch.await();
         long endTime = System.currentTimeMillis();
         System.out.println("the rpc time is: " + (endTime-startTime));
-        for(Person person : persons) {
-            System.out.println(person);
-        }
     }
 
     @Test

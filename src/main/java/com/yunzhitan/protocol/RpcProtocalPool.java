@@ -13,9 +13,9 @@ public class RpcProtocalPool {
     private volatile static RpcProtocalPool singleton = new RpcProtocalPool();
 
     private RpcProtocalPool(){
-        protocalMap.put(RpcProtocal.PROTOSTUFFSERIALIZE,new ProtostuffSerialize());
-        protocalMap.put(RpcProtocal.HESSIANSERIALIZE,new HessianSerialize());
-        protocalMap.put(RpcProtocal.JSONSERIALIZE,new JsonSerialize());
+        protocalMap.put(RpcProtocal.PROTOSTUFF,new ProtostuffSerialize());
+        protocalMap.put(RpcProtocal.HESSIAN,new HessianSerialize());
+        protocalMap.put(RpcProtocal.JSON,new JsonSerialize());
     }
 
     public static RpcProtocalPool getInstance() {

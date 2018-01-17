@@ -24,14 +24,14 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ConnectManage {
     private final Logger logger = LoggerFactory.getLogger(ConnectManage.class);
     private volatile static ConnectManage singleton;
-    private RpcProtocal rpcProtocal = RpcProtocal.PROTOSTUFFSERIALIZE;
+    private RpcProtocal rpcProtocal = RpcProtocal.PROTOSTUFF;
 
     private EventLoopGroup eventLoopGroup = new NioEventLoopGroup(4);
+    private Bootstrap bootstrap;
     private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(16, 16, 600L,
             TimeUnit.SECONDS, new ArrayBlockingQueue<>(65536));
 
     private FixedChannelPool fixedChannelPool;
-    private Bootstrap bootstrap;
 
     private CopyOnWriteArrayList<ConsumerHandler> connectedHandlers = new CopyOnWriteArrayList<>();
     private Map<InetSocketAddress, ConsumerHandler> connectedServerNodes = new ConcurrentHashMap<>();
@@ -110,12 +110,12 @@ public class ConnectManage {
 
     private void connectServerNode(final InetSocketAddress remotePeer) {
         threadPoolExecutor.submit(() -> {
-            Bootstrap b = new Bootstrap();  //eventLoopGroup netty框架下的线程池，默认为cpu的二倍
-            b.group(eventLoopGroup)
+            Bootstrap bootstrap = new Bootstrap();  //eventLoopGroup netty框架下的线程池，默认为cpu的二倍
+            bootstrap.group(eventLoopGroup)
                     .channel(NioSocketChannel.class)
                     .handler(new RpcConsumerInitializer(rpcProtocal));
 
-            ChannelFuture channelFuture = b.connect(remotePeer);
+            ChannelFuture channelFuture = bootstrap.connect(remotePeer);
             channelFuture.addListener((ChannelFutureListener) channelFuture1 -> {
                 if (channelFuture1.isSuccess()) {
                     logger.debug("Successfully connect to remote server. remote peer = " + remotePeer);
@@ -128,7 +128,7 @@ public class ConnectManage {
 
     private void addHandler(ConsumerHandler handler) {
         connectedHandlers.add(handler);
-        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getChannel().remoteAddress();
+        InetSocketAddress remoteAddress = (InetSocketAddress) handler.getRemoteAddress();
         connectedServerNodes.put(remoteAddress, handler);
         signalAvailableHandler();
     }
@@ -145,7 +145,7 @@ public class ConnectManage {
     private boolean waitingForHandler() throws InterruptedException {
         lock.lock();
         try {
-            long connectTimeoutMillis = 6000;
+            long connectTimeoutMillis = 1000;
             return connected.await(connectTimeoutMillis, TimeUnit.MILLISECONDS);
         } finally {
             lock.unlock();
