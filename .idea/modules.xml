@@ -3,6 +3,22 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/BaubleRpc.iml" filepath="$PROJECT_DIR$/BaubleRpc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-common/bauble-common.iml" filepath="$PROJECT_DIR$/bauble-common/bauble-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-config/bauble-config.iml" filepath="$PROJECT_DIR$/bauble-config/bauble-config.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-example/bauble-example.iml" filepath="$PROJECT_DIR$/bauble-example/bauble-example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-monitor/bauble-monitor.iml" filepath="$PROJECT_DIR$/bauble-monitor/bauble-monitor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-registry/bauble-registry.iml" filepath="$PROJECT_DIR$/bauble-registry/bauble-registry.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-rpc/bauble-rpc.iml" filepath="$PROJECT_DIR$/bauble-rpc/bauble-rpc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/bauble-serialization.iml" filepath="$PROJECT_DIR$/bauble-serialization/bauble-serialization.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/bauble-serialization-api/bauble-serialization-api.iml" filepath="$PROJECT_DIR$/bauble-serialization/bauble-serialization-api/bauble-serialization-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/bauble-serialization-hessian/bauble-serialization-hessian.iml" filepath="$PROJECT_DIR$/bauble-serialization/bauble-serialization-hessian/bauble-serialization-hessian.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/bauble-serialization-java/bauble-serialization-java.iml" filepath="$PROJECT_DIR$/bauble-serialization/bauble-serialization-java/bauble-serialization-java.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/bauble-serialization-kryo/bauble-serialization-kryo.iml" filepath="$PROJECT_DIR$/bauble-serialization/bauble-serialization-kryo/bauble-serialization-kryo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/bauble-serialization-protostuff/bauble-serialization-protostuff.iml" filepath="$PROJECT_DIR$/bauble-serialization/bauble-serialization-protostuff/bauble-serialization-protostuff.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-transport/bauble-transport.iml" filepath="$PROJECT_DIR$/bauble-transport/bauble-transport.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-transport/bauble-transport-api/bauble-transport-api.iml" filepath="$PROJECT_DIR$/bauble-transport/bauble-transport-api/bauble-transport-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-transport/bauble-transport-netty/bauble-transport-netty.iml" filepath="$PROJECT_DIR$/bauble-transport/bauble-transport-netty/bauble-transport-netty.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bauble-serialization/baubles-[erializion-api.iml" filepath="$PROJECT_DIR$/bauble-serialization/baubles-[erializion-api.iml" />
     </modules>
   </component>
 </project>

@@ -6,11 +6,40 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="BaubleRpc" />
+        <module name="bauble-common" />
+        <module name="bauble-config" />
+        <module name="bauble-example" />
+        <module name="bauble-monitor" />
+        <module name="bauble-registry" />
+        <module name="bauble-rpc" />
+        <module name="bauble-serialization-api" />
+        <module name="bauble-serialization-hessian" />
+        <module name="bauble-serialization-java" />
+        <module name="bauble-serialization-kryo" />
+        <module name="bauble-serialization-protostuff" />
+        <module name="bauble-transport-api" />
+        <module name="bauble-transport-netty" />
+        <module name="baubles-[erializion-api" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="bauble-common" target="1.8" />
+      <module name="bauble-config" target="1.8" />
+      <module name="bauble-example" target="1.8" />
+      <module name="bauble-monitor" target="1.8" />
+      <module name="bauble-registry" target="1.8" />
+      <module name="bauble-rpc" target="1.8" />
+      <module name="bauble-serialization" target="1.8" />
+      <module name="bauble-serialization-api" target="1.8" />
+      <module name="bauble-serialization-hessian" target="1.8" />
+      <module name="bauble-serialization-java" target="1.8" />
+      <module name="bauble-serialization-kryo" target="1.8" />
+      <module name="bauble-serialization-protostuff" target="1.8" />
+      <module name="bauble-transport" target="1.8" />
+      <module name="bauble-transport-api" target="1.8" />
+      <module name="bauble-transport-netty" target="1.8" />
       <module name="BaubleRpc" target="1.8" />
+      <module name="baubles-[erializion-api" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

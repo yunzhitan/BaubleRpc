@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: net.openhft:affinity:unknown">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/openhft/affinity/unknown/affinity-unknown.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/net/openhft/affinity/unknown/affinity-unknown-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/openhft/affinity/unknown/affinity-unknown-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

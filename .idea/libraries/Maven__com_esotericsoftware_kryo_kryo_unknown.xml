@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.esotericsoftware.kryo:kryo:unknown">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/esotericsoftware/kryo/kryo/unknown/kryo-unknown.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/esotericsoftware/kryo/kryo/unknown/kryo-unknown-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/esotericsoftware/kryo/kryo/unknown/kryo-unknown-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

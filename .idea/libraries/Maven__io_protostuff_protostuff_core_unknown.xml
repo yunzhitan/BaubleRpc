@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: io.protostuff:protostuff-core:unknown">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/protostuff/protostuff-core/unknown/protostuff-core-unknown.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/io/protostuff/protostuff-core/unknown/protostuff-core-unknown-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/protostuff/protostuff-core/unknown/protostuff-core-unknown-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
