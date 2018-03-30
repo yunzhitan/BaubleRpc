@@ -9,7 +9,7 @@ import java.util.List;
 public class FilterLoader {
     private static final Logger logger = LoggerFactory.getLogger(FilterLoader.class);
 
-    public static FilterChain loadExtFilters(FilterChain chain,Filter.Type type) {
+    public static FilterChain loadExtFilters(FilterChain chain, Filter.Type type) {
         try {
             List<Filter> sortedList = BaubleServiceLoader.load(Filter.class).sort();
 

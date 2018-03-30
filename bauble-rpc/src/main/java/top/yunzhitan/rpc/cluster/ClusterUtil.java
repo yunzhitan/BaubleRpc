@@ -1,6 +1,6 @@
 package top.yunzhitan.rpc.cluster;
 
-import top.yunzhitan.rpc.consumer.Dispatcher;
+import top.yunzhitan.rpc.consumer.transporter.Transporter;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
 
@@ -13,10 +13,10 @@ public class ClusterUtil {
     private final ClusterInvoker defaultClusterInvoker;
     private final Map<String,ClusterInvoker> methodSpecialClusterInvoker;
 
-    public ClusterUtil(Dispatcher dispatcher,
+    public ClusterUtil(Transporter transporter,
                                    ClusterTypeConfig defaultStrategy,
                                    List<MethodSpecialConfig> methodSpecialConfigs) {
-        this.defaultClusterInvoker = createClusterInvoker(dispatcher, defaultStrategy);
+        this.defaultClusterInvoker = createClusterInvoker(transporter, defaultStrategy);
         this.methodSpecialClusterInvoker = new HashMap<>();
 
         for (MethodSpecialConfig config : methodSpecialConfigs) {
@@ -24,7 +24,7 @@ public class ClusterUtil {
             if (strategy != null) {
                 methodSpecialClusterInvoker.put(
                         config.getMethodName(),
-                        createClusterInvoker(dispatcher, strategy)
+                        createClusterInvoker(transporter, strategy)
                 );
             }
         }
@@ -35,15 +35,15 @@ public class ClusterUtil {
         return invoker != null ? invoker : defaultClusterInvoker;
     }
 
-    private ClusterInvoker createClusterInvoker(Dispatcher dispatcher, ClusterTypeConfig strategy) {
+    private ClusterInvoker createClusterInvoker(Transporter transporter, ClusterTypeConfig strategy) {
         ClusterType s = strategy.getClusterType();
         switch (s) {
             case FAIL_FAST:
-                return new FailFastClusterInvoker(dispatcher);
+                return new FailFastClusterInvoker(transporter);
             case FAIL_OVER:
-                return new FailOverClusterInvoker(dispatcher, strategy.getFailoverRetries());
+                return new FailOverClusterInvoker(transporter, strategy.getFailoverRetries());
             case FAIL_SAFE:
-                return new FailSafeClusterInvoker(dispatcher);
+                return new FailSafeClusterInvoker(transporter);
             default:
                 throw new UnsupportedOperationException("strategy: " + strategy);
         }

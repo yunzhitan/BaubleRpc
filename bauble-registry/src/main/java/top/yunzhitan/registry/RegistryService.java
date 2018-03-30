@@ -1,6 +1,6 @@
 package top.yunzhitan.registry;
 
-import com.yunzhitan.rpc.model.ServiceMeta;
+import top.yunzhitan.rpc.model.ServiceMeta;
 
 import java.util.Collection;
 import java.util.Map;

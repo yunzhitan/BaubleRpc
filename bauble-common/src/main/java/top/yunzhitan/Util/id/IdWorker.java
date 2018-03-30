@@ -1,4 +1,4 @@
-package top.yunzhitan.rpc.id;
+package top.yunzhitan.Util.id;
 
 import top.yunzhitan.Util.SystemPropertyUtil;
 

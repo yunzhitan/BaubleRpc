@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class DefaultServiceContainer implements ServiceProviderContainer {
+public class DefaultServiceContainer implements ServiceContainer {
 
     private final ConcurrentMap<String,ServiceProvider> serviceProviders = new ConcurrentHashMap<>();
     private static final Logger logger = LoggerFactory.getLogger(DefaultServiceContainer.class);

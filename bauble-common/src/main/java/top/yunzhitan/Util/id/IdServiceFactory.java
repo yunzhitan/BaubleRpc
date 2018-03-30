@@ -1,4 +1,4 @@
-package top.yunzhitan.rpc.id;
+package top.yunzhitan.Util.id;
 
 public interface IdServiceFactory {
 

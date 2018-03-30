@@ -104,7 +104,7 @@ public class ProtocolHeader {
         public String toString() {
                 return "ProtocolHeader{" +
                         "messageCode=" + messageCode +
-                        ", serializerCode=" + serializerCode +
+                        ", getSerializerCode=" + serializerCode +
                         ", status=" + status +
                         ", id=" + id +
                         ", bodyLength=" + bodyLength +

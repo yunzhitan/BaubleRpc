@@ -55,7 +55,7 @@ public class RequestWrapper {
     @Override
     public String toString() {
         return "RequestWrapper{" +
-                "appName='" + appName + '\'' +
+                "getAppname='" + appName + '\'' +
                 ", methodName='" + methodName + '\'' +
                 ", arguments=" + Arrays.toString(arguments) +
                 ", traceId=" + traceId +

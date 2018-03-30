@@ -50,23 +50,6 @@ public interface Client<C> {
     /**
      * Returns list of {@link DefaultChannelGroup}s by the same {@link Directory}.
      */
-    CopyOnWriteGroupList directory(Directory directory);
-
-    /**
-     * Returns {@code true} if has available {@link DefaultChannelGroup}s
-     * on this {@link Directory}.
-     */
-    boolean isDirectoryAvailable(Directory directory);
-
-    /**
-     * Returns the {@link DirectoryJChannelGroup}.
-     */
-    DirectoryJChannelGroup directoryGroup();
-
-    /**
-     * Returns the {@link JConnectionManager}.
-     */
-    JConnectionManager connectionManager();
 
     /**
      * Shutdown the server.

@@ -10,13 +10,12 @@ import top.yunzhitan.rpc.model.ServiceProvider;
 import top.yunzhitan.rpc.provider.DefaultServiceContainer;
 import top.yunzhitan.rpc.provider.ProviderInitializer;
 import top.yunzhitan.rpc.provider.ProviderInterceptor;
-import top.yunzhitan.rpc.provider.ServiceProviderContainer;
+import top.yunzhitan.rpc.provider.ServiceContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.transport.Directory;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -33,7 +32,7 @@ public class DefaultProviderManager implements ProviderManager {
     /**
      * Provider本地容器
      */
-    private final ServiceProviderContainer providerContainer = new DefaultServiceContainer();
+    private final ServiceContainer providerContainer = new DefaultServiceContainer();
 
     /**
      * 全局拦截器

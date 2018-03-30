@@ -1,6 +1,6 @@
 package top.yunzhitan.rpc.cluster;
 
-import top.yunzhitan.rpc.consumer.Dispatcher;
+import top.yunzhitan.rpc.consumer.transporter.Transporter;
 import top.yunzhitan.rpc.future.InvokeFuture;
 import top.yunzhitan.rpc.model.RpcRequest;
 
@@ -19,12 +19,12 @@ import top.yunzhitan.rpc.model.RpcRequest;
 
 public class FailOverClusterInvoker implements ClusterInvoker {
 
-    private Dispatcher dispatcher;
-    private int failoverRetries;
+    private Transporter transporter;
+    private int retries;
 
-    public FailOverClusterInvoker(Dispatcher dispatcher, int failoverRetries) {
-        this.dispatcher = dispatcher;
-        this.failoverRetries = failoverRetries;
+    public FailOverClusterInvoker(Transporter transporter, int retries) {
+        this.transporter = transporter;
+        this.retries = retries;
     }
 
     @Override
@@ -34,6 +34,6 @@ public class FailOverClusterInvoker implements ClusterInvoker {
 
     @Override
     public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) throws Exception {
-        return dispatcher.dispatch()
+        return transporter.sendMessage(request,returnType);
     }
 }

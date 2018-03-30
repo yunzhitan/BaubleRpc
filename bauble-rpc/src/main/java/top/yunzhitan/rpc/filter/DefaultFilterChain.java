@@ -2,7 +2,7 @@ package top.yunzhitan.rpc.filter;
 
 import top.yunzhitan.rpc.model.RpcRequest;
 
-public class DefaultFilterChain implements FilterChain{
+public class DefaultFilterChain implements FilterChain {
 
     private final Filter filter;
     private final FilterChain next;

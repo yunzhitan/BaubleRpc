@@ -38,7 +38,7 @@ public class ProtocolEncoder extends MessageToByteEncoder {
     }
 
     private void encodeRequest(RequestMessage requestMessage, ByteBuf byteBuf) {
-        byte sign = ProtocolHeader.toSign(requestMessage.serializerCode(),ProtocolHeader.REQUEST);
+        byte sign = ProtocolHeader.toSign(requestMessage.getSerializerCode(),ProtocolHeader.REQUEST);
         byte status = 0x00;
         byte[] bytes = requestMessage.getbytes();
         int length = bytes.length;
@@ -46,7 +46,7 @@ public class ProtocolEncoder extends MessageToByteEncoder {
         byteBuf.writeShort(ProtocolHeader.MAGIC)
                 .writeByte(sign)
                 .writeByte(status)
-                .writeLong(requestMessage.getRequestId())
+                .writeLong(requestMessage.getInvokeId())
                 .writeInt(length)
                 .writeBytes(bytes);
     }

@@ -1,7 +1,5 @@
 package top.yunzhitan.rpc.filter;
 
-
-import top.yunzhitan.rpc.model.Request;
 import top.yunzhitan.rpc.model.RpcRequest;
 
 public interface Filter {

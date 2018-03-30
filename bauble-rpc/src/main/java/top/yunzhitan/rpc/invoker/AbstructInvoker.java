@@ -2,13 +2,12 @@ package top.yunzhitan.rpc.invoker;
 
 import top.yunzhitan.rpc.cluster.ClusterInvoker;
 import top.yunzhitan.rpc.cluster.ClusterUtil;
+import top.yunzhitan.rpc.consumer.transporter.Transporter;
 import top.yunzhitan.rpc.model.ServiceMeta;
-import top.yunzhitan.rpc.consumer.Dispatcher;
 import top.yunzhitan.rpc.filter.*;
 import top.yunzhitan.rpc.model.*;
 import top.yunzhitan.rpc.tracing.TraceId;
 import top.yunzhitan.rpc.tracing.TracingUtil;
-import top.yunzhitan.transport.TraceUtil;
 
 import java.util.List;
 
@@ -21,12 +20,12 @@ public abstract class AbstructInvoker {
 
     public AbstructInvoker(String appName,
                            ServiceMeta metadata,
-                           Dispatcher dispatcher,
+                           Transporter transporter,
                            ClusterTypeConfig defaultStrategy,
                            List<MethodSpecialConfig> methodSpecialConfigs) {
         this.appName = appName;
         this.serviceMeta = metadata;
-        clusterUtil = new ClusterUtil(dispatcher, defaultStrategy, methodSpecialConfigs);
+        clusterUtil = new ClusterUtil(transporter, defaultStrategy, methodSpecialConfigs);
     }
 
 
@@ -46,7 +45,7 @@ public abstract class AbstructInvoker {
         ClusterInvoker invoker = clusterUtil.findClusterInvoker(methodName);
 
         InvokeContext invokeContext = new InvokeContext(invoker,returnType,sync);
-        Chains.invoke(request,invokeContext);
+        InvokeHandler.invoke(request,invokeContext);
         return invokeContext.getResult();
     }
 
@@ -60,17 +59,17 @@ public abstract class AbstructInvoker {
         }
     }
 
-    static class Chains {
+    private static class InvokeHandler {
 
-        private static final FilterChain headChain;
+        private static final FilterChain headFilter;
 
         static {
-            FilterChain invokeChain = new DefaultFilterChain(new ClusterInvokerFilter(), null);
-            headChain = FilterLoader.loadExtFilters(invokeChain, Filter.Type.CONSUMER);
+            FilterChain invokeHandler = new DefaultFilterChain(new ClusterInvokerFilter(), null);
+            headFilter = FilterLoader.loadExtFilters(invokeHandler, Filter.Type.CONSUMER);
         }
 
         public static <T extends FilterContext> T invoke(RpcRequest request, T invokeCtx) throws Throwable {
-            headChain.doFilter(request, invokeCtx);
+            headFilter.doFilter(request, invokeCtx);
             return invokeCtx;
         }
     }

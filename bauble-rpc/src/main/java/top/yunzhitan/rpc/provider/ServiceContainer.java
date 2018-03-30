@@ -4,7 +4,7 @@ import top.yunzhitan.rpc.model.ServiceProvider;
 
 import java.util.List;
 
-public interface ServiceProviderContainer {
+public interface ServiceContainer {
 
     /**
      * 注册服务到本地容器

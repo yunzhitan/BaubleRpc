@@ -3,10 +3,10 @@ package top.yunzhitan.rpc.consumer.proxy;
 import com.google.common.collect.Lists;
 import top.yunzhitan.Util.SocketAddress;
 import top.yunzhitan.protocol.RpcProtocal;
-import top.yunzhitan.rpc.Client;
+import top.yunzhitan.rpc.ConsunerManager;
 import top.yunzhitan.rpc.DispatchType;
 import top.yunzhitan.rpc.cluster.ClusterType;
-import top.yunzhitan.rpc.consumer.Dispatcher;
+import top.yunzhitan.rpc.consumer.transporter.Transporter;
 import top.yunzhitan.rpc.invoker.AsyncInvoker;
 import top.yunzhitan.rpc.invoker.InvokerType;
 import top.yunzhitan.rpc.invoker.SyncInvoker;
@@ -40,7 +40,7 @@ public class ProxyFactory<T> {
     //provider地址
     private List<SocketAddress> addresses;
 
-    private Client client;
+    private ConsunerManager consunerManager;
 
     private InvokerType invokeType = InvokerType.getDefault();
     private DispatchType dispatchType;
@@ -91,12 +91,12 @@ public class ProxyFactory<T> {
                 .version(directory.getVersion());
     }
 
-    public ProxyFactory<T> client(Client client) {
-        this.client = client;
+    public ProxyFactory<T> client(ConsunerManager consunerManager) {
+        this.consunerManager = consunerManager;
         return this;
     }
 
-    public ProxyFactory<T> serializerType(RpcProtocal serializerType) {
+    public ProxyFactory<T> serializerType(Serial serializerType) {
         this.serialType = serializerType;
         return this;
     }
@@ -169,13 +169,13 @@ public class ProxyFactory<T> {
                 version
         );
 
-        JConnector<JConnection> connector = client.connector();
+        JConnector<JConnection> connector = consunerManager.connector();
         for (SocketAddress address : addresses) {
             connector.addChannelGroup(metadata, connector.group(address));
         }
 
-        // dispatcher
-        Dispatcher dispatcher = dispatcher()
+        // transporter
+        Transporter transporter = dispatcher()
                 .hooks(hooks)
                 .timeoutMillis(timeoutMillis)
                 .methodSpecialConfigs(methodSpecialConfigs);
@@ -184,10 +184,10 @@ public class ProxyFactory<T> {
         Object handler;
         switch (invokeType) {
             case SYNC:
-                handler = new SyncInvoker(client.appName(), metadata, dispatcher, strategyConfig, methodSpecialConfigs);
+                handler = new SyncInvoker(consunerManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             case ASYNC:
-                handler = new AsyncInvoker(client.appName(), metadata, dispatcher, strategyConfig, methodSpecialConfigs);
+                handler = new AsyncInvoker(consunerManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             default:
                 throw new Throwable("invokeType: " + invokeType);

@@ -1,5 +1,6 @@
 package top.yunzhitan.registry.zookeeper;
 
+import com.google.common.base.Strings;
 import top.yunzhitan.Util.collection.ConcurrentSet;
 import top.yunzhitan.registry.AbstructRegistryService;
 import top.yunzhitan.registry.NotifyEvent;
@@ -192,7 +193,7 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
      */
     private RegisterMeta parseRegisterMeta(String data) {
         //directory
-        String[] array_1 = Strings.split(data,'/');
+        String[] array_1 = .split(data,'/');
         RegisterMeta meta = new RegisterMeta();
         meta.setGroup(array_1[2]);
         meta.setServiceName(array_1[3]);

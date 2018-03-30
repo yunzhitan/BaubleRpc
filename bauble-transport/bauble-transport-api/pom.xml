@@ -17,6 +17,11 @@
             <artifactId>bauble-serialization</artifactId>
             <version>${project.version}</version>
         </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>bauble-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
@@ -26,11 +31,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.7</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>bauble-common</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
