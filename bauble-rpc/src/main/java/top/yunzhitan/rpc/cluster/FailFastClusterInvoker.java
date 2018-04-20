@@ -10,10 +10,7 @@ import top.yunzhitan.rpc.model.RpcRequest;
  *
  * https://en.wikipedia.org/wiki/Fail-fast
  *
- * jupiter
- * org.jupiter.rpc.consumer.cluster
  *
- * @author jiachun.fjc
  */
 
 public class FailFastClusterInvoker implements ClusterInvoker {
@@ -30,7 +27,7 @@ public class FailFastClusterInvoker implements ClusterInvoker {
     }
 
     @Override
-    public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) throws Exception {
+    public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) {
         return transporter.sendMessage(request,returnType);
     }
 }

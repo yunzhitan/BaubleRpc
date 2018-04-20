@@ -15,14 +15,14 @@ public class RegistryConfig implements InitializingBean, DisposableBean{
 
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         RpcServer ref = RpcServer.getInstance();
         ref.stop();
 
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         RpcServer ref = RpcServer.getInstance();
         ref.setServerAddress(serverAddress);
         RpcProtocal rpcProtocal = RpcProtocal.PROTOSTUFF;

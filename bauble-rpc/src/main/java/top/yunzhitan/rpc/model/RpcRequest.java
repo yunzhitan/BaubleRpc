@@ -4,39 +4,58 @@ import top.yunzhitan.transport.RequestMessage;
 import top.yunzhitan.rpc.tracing.TraceId;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class RpcRequest implements Serializable{
 
     private static final long serialVersionUID = -47365345647583434L;
+    private String appName;
 
-    private RequestMessage requestMessage;
-    private RequestWrapper requestWrapper;
+    private String methodName;
 
-    public RpcRequest() {
-        this.requestMessage = new RequestMessage();
+    private Object[] arguments;
+
+    private TraceId traceId;
+
+
+    public String getAppName() {
+        return appName;
     }
 
-    public RequestWrapper getRequestWrapper() {
-        return requestWrapper;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    public void setRequestWrapper(RequestWrapper requestWrapper) {
-        this.requestWrapper = requestWrapper;
+    public String getMethodName() {
+        return methodName;
     }
 
-    public RequestMessage getRequestMessage() {
-        return requestMessage;
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
     }
 
-    public void setRequestMessage(RequestMessage requestMessage) {
-        this.requestMessage = requestMessage;
+    public Object[] getArguments() {
+        return arguments;
     }
 
+    public void setArguments(Object[] arguments) {
+        this.arguments = arguments;
+    }
+
+    public TraceId getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(TraceId traceId) {
+        this.traceId = traceId;
+    }
 
     @Override
     public String toString() {
         return "RpcRequest{" +
-                "requestWrapper=" + requestWrapper +
+                "appName='" + appName + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", arguments=" + Arrays.toString(arguments) +
                 '}';
     }
 }

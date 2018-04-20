@@ -27,7 +27,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class ProtocolEncoder extends MessageToByteEncoder {
 
     @Override
-    protected void encode(ChannelHandlerContext channelHandlerContext, Object o, ByteBuf byteBuf) throws Exception {
+    protected void encode(ChannelHandlerContext channelHandlerContext, Object o, ByteBuf byteBuf) {
         if(o instanceof RequestMessage) {
             encodeRequest((RequestMessage)o,byteBuf);
         } else if(o instanceof ResponseMessage) {

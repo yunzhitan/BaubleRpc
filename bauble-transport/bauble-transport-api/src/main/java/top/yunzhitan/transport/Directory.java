@@ -8,7 +8,7 @@ public abstract class Directory {
     public abstract String getGroup();
 
     /** 服务名称 */
-    public abstract String getServiceProviderName();
+    public abstract String getServiceName();
 
     /** 服务版本号 */
     public abstract String getVersion();
@@ -21,7 +21,7 @@ public abstract class Directory {
         StringBuilder buf = new StringBuilder();
         buf.append(getGroup())
                 .append('-')
-                .append(getServiceProviderName())
+                .append(getServiceName())
                 .append('-')
                 .append(getVersion());
 

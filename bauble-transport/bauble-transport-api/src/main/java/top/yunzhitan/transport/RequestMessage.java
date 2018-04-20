@@ -45,16 +45,20 @@ public class RequestMessage {
         this.serializerCode = serializerCode;
     }
 
+    public byte[] getBytes() {
+        return bytes;
+    }
+
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
     }
 
-    public byte[] getbytes() {
-        return bytes;
-    }
-
     public void nullBytes() {
         bytes = null; // help gc
+    }
+
+    public void setInvokeId(long invokeId) {
+        this.invokeId = invokeId;
     }
 
     public int size() {

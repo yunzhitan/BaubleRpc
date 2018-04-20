@@ -33,7 +33,7 @@ public class FailOverClusterInvoker implements ClusterInvoker {
     }
 
     @Override
-    public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) throws Exception {
+    public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) {
         return transporter.sendMessage(request,returnType);
     }
 }

@@ -1,10 +1,8 @@
 package top.yunzhitan.transport;
 
-import io.netty.channel.group.DefaultChannelGroup;
 import top.yunzhitan.transport.processor.ClientProcessor;
 
 import java.net.SocketAddress;
-import java.util.Collection;
 
 public interface Client<C> {
     /**
@@ -20,54 +18,29 @@ public interface Client<C> {
     /**
      * Connects to the remote peer.
      */
-    C connect(SocketAddress address);
+    C writeMessage(SocketAddress address, RequestMessage message, FutureListener listener);
 
     /**
-     * Connects to the remote peer.
+     * try to writeMessage to the remote peer.
+     * @param address
+     * @param listener
      */
-    C connect(SocketAddress address, boolean async);
+    void tryConnect(SocketAddress address,FutureListener listener);
 
-    /**
-     * Returns or new a {@link DefaultChannelGroup}.
-     */
-    DefaultChannelGroup getGroup(SocketAddress address);
+    C writeMessage(SocketAddress address, RequestMessage message, boolean async, FutureListener listener);
 
-    /**
-     * Returns all {@link DefaultChannelGroup}s.
-     */
-    Collection<DefaultChannelGroup> getGroups();
-
-    /**
-     * Adds a {@link DefaultChannelGroup} by {@link Directory}.
-     */
-    boolean addChannelGroup(Directory directory, DefaultChannelGroup group);
-
-    /**
-     * Removes a {@link DefaultChannelGroup} by {@link Directory}.
-     */
-    boolean removeChannelGroup(Directory directory, DefaultChannelGroup group);
-
-    /**
-     * Returns list of {@link DefaultChannelGroup}s by the same {@link Directory}.
-     */
 
     /**
      * Shutdown the server.
      */
     void shutdownGracefully();
 
-    interface ConnectionWatcher {
+    boolean addRemotePeer(Directory directory,RemotePeer remotePeer);
 
-        /**
-         * Start to connect to server.
-         */
-        void start();
+    boolean removeRemotePeer(Directory directory,RemotePeer remotePeer);
 
-        /**
-         * Wait until the connections is available or timeout,
-         * if available return true, otherwise return false.
-         */
-        boolean waitForAvailable(long timeoutMillis);
-    }
+    RemotePeer getRemotePeer(SocketAddress address);
+
+    boolean isDirectoryAvailable(Directory directory);
 
 }

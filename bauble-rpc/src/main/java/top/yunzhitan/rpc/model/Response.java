@@ -3,7 +3,7 @@ package top.yunzhitan.rpc.model;
 public interface Response {
 
     /**
-     * Get invoke result.
+     * Get filter result.
      *
      * @return result. if no result return null.
      */

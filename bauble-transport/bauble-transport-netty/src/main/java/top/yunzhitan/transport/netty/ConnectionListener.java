@@ -14,7 +14,7 @@ public class ConnectionListener implements ChannelFutureListener {
     }
 
     @Override
-    public void operationComplete(ChannelFuture channelFuture) throws Exception {
+    public void operationComplete(ChannelFuture channelFuture) {
         if(!channelFuture.isSuccess()) {
             final EventLoopGroup loopGroup = channelFuture.channel().eventLoop();
             loopGroup.schedule(new Runnable() {

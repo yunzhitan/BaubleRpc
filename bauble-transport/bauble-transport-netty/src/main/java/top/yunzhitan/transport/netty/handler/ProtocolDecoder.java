@@ -6,6 +6,7 @@ import top.yunzhitan.transport.ResponseMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
+import top.yunzhitan.transport.Status;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ProtocolDecoder extends ReplayingDecoder<ProtocolDecoder.State> {
     }
 
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
+    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) {
         switch (state()) {
             case HEADER_MAGIC:
                 checkMagic(byteBuf.readShort());
@@ -81,7 +82,8 @@ public class ProtocolDecoder extends ReplayingDecoder<ProtocolDecoder.State> {
                 int length = header.bodyLength();
                 byte[] bytes = new byte[length];
                 byteBuf.readBytes(bytes);
-                ResponseMessage responseMessage = new ResponseMessage(header.id());
+                ResponseMessage responseMessage = new ResponseMessage();
+                responseMessage.setResponseId(header.id());
                 responseMessage.setStatus(header.status());
                 responseMessage.setBytes(bytes);
                 out.add(responseMessage);

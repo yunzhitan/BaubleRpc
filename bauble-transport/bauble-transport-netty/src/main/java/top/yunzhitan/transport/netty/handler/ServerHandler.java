@@ -20,7 +20,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     private ServerProcessor processor;
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Channel channel = ctx.channel();
 
         if(msg instanceof RequestMessage) {
@@ -33,19 +33,19 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         int count = channelCounter.getAndIncrement();
         logger.info("Connects with {} as the {}th channel",ctx.channel(),count);
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         int count = channelCounter.getAndDecrement();
         logger.info("Connects with {}, the{} channel has broken down",ctx.channel(),count);
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         Channel channel = ctx.channel();
 
         if(cause instanceof IOException) {

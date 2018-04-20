@@ -2,33 +2,30 @@ package top.yunzhitan.transport.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.pool.AbstractChannelPoolMap;
 import io.netty.channel.pool.ChannelPool;
-import io.netty.channel.pool.ChannelPoolMap;
 import io.netty.channel.pool.FixedChannelPool;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.FutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.SystemPropertyUtil;
-import top.yunzhitan.serialization.RpcProtocal;
-import top.yunzhitan.transport.Client;
-import top.yunzhitan.transport.ConnectionFuture;
-import top.yunzhitan.transport.Directory;
-import top.yunzhitan.transport.netty.handler.ChannelPoolHander;
+import top.yunzhitan.rpc.ConnectionManager;
+import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.transport.*;
 import top.yunzhitan.transport.netty.handler.ClientHandler;
-import top.yunzhitan.transport.netty.handler.ProtocolDecoder;
-import top.yunzhitan.transport.netty.handler.ProtocolEncoder;
+import top.yunzhitan.transport.netty.handler.NettyChannelPoolHandler;
 import top.yunzhitan.transport.processor.ClientProcessor;
 
 import java.net.SocketAddress;
-import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 public class NettyClient implements Client{
 
@@ -37,16 +34,17 @@ public class NettyClient implements Client{
     /**
      * 序列化方式
      */
-    private RpcProtocal protocal;
+    private ConcurrentMap<SocketAddress,RemotePeer> remotepeerMap = new ConcurrentHashMap<>();
+    private RemotePeerManager peerManager = new RemotePeerManager();
     private Bootstrap bootstrap;
     private EventLoopGroup workerGroup;
     private int nWorkers = SystemPropertyUtil.AVAILABLE_PROCESSORS;
-    private ChannelPoolMap<SocketAddress,ChannelPool> channelPoolMap;
+    private AbstractChannelPoolMap<SocketAddress,ChannelPool> channelPoolMap;
     private ClientProcessor processor;
+    private ConnectionManager manager;
     private ClientHandler clientHandler = new ClientHandler();
 
-    public NettyClient(RpcProtocal protocal, ClientProcessor processor) {
-        this.protocal = protocal;
+    public NettyClient(ClientProcessor processor) {
         this.processor = processor;
     }
 
@@ -64,55 +62,56 @@ public class NettyClient implements Client{
         channelPoolMap = new AbstractChannelPoolMap<SocketAddress, ChannelPool>() {
             @Override
             protected ChannelPool newPool(SocketAddress address) {
-                return new FixedChannelPool(bootstrap.remoteAddress(address),new ChannelPoolHander(),5);
+                return new FixedChannelPool(bootstrap.remoteAddress(address),new NettyChannelPoolHandler(processor),5);
             }
         };
 
     }
+
+    public void subscribe(Service service) {
+
+    }
+
    @Override
-    public ConnectionFuture connect(SocketAddress address) {
-        return connect(address,false);
+    public ConnectionFuture writeMessage(SocketAddress address, RequestMessage message, top.yunzhitan.transport.FutureListener listener) {
+        return writeMessage(address,message,false,listener);
     }
 
+
     @Override
-    public ConnectionFuture connect(SocketAddress address, boolean async) {
-        Bootstrap bootstrap = new Bootstrap();
-        ThreadFactory workerFactory = new DefaultThreadFactory("bauble-worker",Thread.MAX_PRIORITY);
-        workerGroup = new NioEventLoopGroup(nWorkers,workerFactory);
-        bootstrap.group(workerGroup).channel(NioSocketChannel.class)
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel socketChannel) throws Exception {
-                        ChannelPipeline ch = socketChannel.pipeline();
-                        ch.addLast(new IdleStateHandler(60,0,0, TimeUnit.SECONDS));
-                        ch.addLast(new ProtocolEncoder());
-                        ch.addLast(new ProtocolDecoder());
-                        ch.addLast(clientHandler);
+    public ConnectionFuture writeMessage(SocketAddress address, RequestMessage message, boolean async, top.yunzhitan.transport.FutureListener listener) {
+        ChannelPool channelPool = channelPoolMap.get(address);
+        if(channelPool != null) {
+            Future<Channel> future = channelPool.acquire();
+            future.addListener(new FutureListener<Channel>() {
+                @Override
+                public void operationComplete(Future<Channel> channelFuture) {
+                    if(channelFuture.isSuccess()) {
+                        Channel channel = future.getNow();
+                        channel.writeAndFlush(message).addListener(new ChannelFutureListener() {
+                            @Override
+                            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                                if(channelFuture.isSuccess()) {
+                                    listener.operationSuccess(channel);
+                                }
+                                else {
+                                    listener.operationFailure(channel,channelFuture.cause());
+                                }
+                            }
+                        });
+                        channelPool.release(channel);
                     }
-                })
-                .option(ChannelOption.TCP_NODELAY,true)
-                .option(ChannelOption.SO_KEEPALIVE,true);
-        ChannelFuture future;
-        try {
-            future = bootstrap.connect(address).addListener(new ConnectionListener(this));
-            if (!async)
-                future.sync();
-        } catch (Throwable t) {
-
+                }
+            });
         }
-        return new ConnectionFuture(address,future);
     }
 
     @Override
-    public DefaultChannelGroup getGroup(SocketAddress address) {
-        return null;
+    public RemotePeer getRemotePeer(SocketAddress address) {
+        RemotePeer remotePeer = remotepeerMap.computeIfAbsent(address,
+                k->new RemotePeer(address));
+        return remotePeer;
     }
-
-    @Override
-    public Collection<DefaultChannelGroup> getGroups() {
-        return null;
-    }
-
     @Override
     public ClientProcessor getProcessor() {
         return processor;
@@ -124,37 +123,55 @@ public class NettyClient implements Client{
     }
 
     @Override
-    public boolean addChannelGroup(Directory directory, DefaultChannelGroup group) {
-        return false;
+    public boolean addRemotePeer(Directory directory, RemotePeer remotePeer) {
+        CopyOnWriteArrayList<RemotePeer> peerLists = peerManager.find(directory);
+        boolean success = peerLists.addIfAbsent(remotePeer);
+        if(success) {
+            peerManager.incrementRefCount(remotePeer);
+            logger.info("Added RemotePeer {} to {}",remotePeer,directory.directory());
+        }
+        return success;
     }
 
     @Override
-    public boolean removeChannelGroup(Directory directory, DefaultChannelGroup group) {
-        return false;
-    }
-
-    @Override
-    public CopyOnWriteGroupList directory(Directory directory) {
-        return null;
+    public boolean removeRemotePeer(Directory directory,RemotePeer remotePeer) {
+        CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(directory);
+        boolean remove = peerList.remove(remotePeer);
+        if(remove) {
+            peerManager.decrementRefCount(remotePeer);
+            logger.warn("Remove RemotePeer {} to {}",remotePeer,directory.directory());
+        }
+        return remove;
     }
 
     @Override
     public boolean isDirectoryAvailable(Directory directory) {
+        CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(directory);
+        for(RemotePeer peer : peerList) {
+            if(peer.isAvailable()) {
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
-    public DirectoryJChannelGroup directoryGroup() {
-        return null;
-    }
-
-    @Override
-    public JConnectionManager connectionManager() {
-        return null;
-    }
+    public void tryConnect(SocketAddress address, top.yunzhitan.transport.FutureListener listener) {
+        ChannelPool channelPool = channelPoolMap.get(address);
+        Future<Channel> future = channelPool.acquire(); //acquire时自动建立Channel连接
+        future.addListener( (channelFuture)-> {
+            if(channelFuture.isSuccess()) {
+                Channel channel = (Channel)channelFuture.getNow();
+                listener.operationSuccess(channel);
+                channelPool.release(channel);
+            }
+            else {
+                listener.operationFailure(channelFuture.cause());
+            }
+        });
 
     @Override
     public void shutdownGracefully() {
-
+        workerGroup.shutdownGracefully();
     }
 }

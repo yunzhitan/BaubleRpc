@@ -26,17 +26,17 @@ public abstract class AbstractFuture<V> {
 
     /**
      * 内部状态转换过程:
-     * NEW -> COMPLETING -> NORMAL          // 正常完成
-     * NEW -> COMPLETING -> EXCEPTIONAL     // 出现异常
+     * NEW -> DOING -> COMPLETED          // 正常完成
+     * NEW -> DOING -> EXCEPTIONAL     // 出现异常
      */
     private volatile int state;
     protected static final int NEW = 0;
-    protected static final int COMPLETING = 1;
-    protected static final int NORMAL = 2;
+    protected static final int DOING = 1;
+    protected static final int COMPLETED = 2;
     protected static final int EXCEPTIONAL = 3;
 
     // 正常返回结果或者异常对象, 通过get()获取或者抛出异常, 无volatile修饰, 通过state保证可见性
-    private Object outcome;
+    private Object result;
     // 存放等待线程的Treiber stack
     @SuppressWarnings("unused")
     private volatile WaitNode waiters;
@@ -56,13 +56,13 @@ public abstract class AbstractFuture<V> {
     /**
      * 调用这个方法之前, 需要先读 {@code state} 来保证可见性
      */
-    protected Object outcome() {
-        return outcome;
+    protected Object result() {
+        return result;
     }
 
     protected V get() throws Throwable {
         int s = state;
-        if (s <= COMPLETING) {
+        if (s <= DOING) {
             s = awaitDone(false, 0L);
         }
         return report(s);
@@ -73,24 +73,24 @@ public abstract class AbstractFuture<V> {
             throw new NullPointerException("unit");
         }
         int s = state;
-        if (s <= COMPLETING && (s = awaitDone(true, unit.toNanos(timeout))) <= COMPLETING) {
+        if (s <= DOING && (s = awaitDone(true, unit.toNanos(timeout))) <= DOING) {
             throw TIMEOUT;
         }
         return report(s);
     }
 
     protected void set(V v) {
-        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) {
-            outcome = v;
+        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, DOING)) {
+            result = v;
             // putOrderedInt在JIT后会通过intrinsic优化掉StoreLoad屏障, 不保证可见性
-            UNSAFE.putOrderedInt(this, stateOffset, NORMAL); // final state
+            UNSAFE.putOrderedInt(this, stateOffset, COMPLETED); // final state
             finishCompletion(v);
         }
     }
 
     protected void setException(Throwable t) {
-        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, COMPLETING)) {
-            outcome = t;
+        if (UNSAFE.compareAndSwapInt(this, stateOffset, NEW, DOING)) {
+            result = t;
             // putOrderedInt在JIT后会通过intrinsic优化掉StoreLoad屏障, 不保证可见性
             UNSAFE.putOrderedInt(this, stateOffset, EXCEPTIONAL); // final state
             finishCompletion(t);
@@ -106,8 +106,8 @@ public abstract class AbstractFuture<V> {
      */
     @SuppressWarnings("unchecked")
     private V report(int s) throws Throwable {
-        Object x = outcome;
-        if (s == NORMAL) {
+        Object x = result;
+        if (s == COMPLETED) {
             return (V) x;
         }
         throw (Throwable) x;
@@ -118,7 +118,7 @@ public abstract class AbstractFuture<V> {
      * 2. 调用钩子函数done()
      */
     private void finishCompletion(Object x) {
-        // assert state > COMPLETING;
+        // assert state > DOING;
         for (WaitNode q; (q = waiters) != null; ) {
             if (UNSAFE.compareAndSwapObject(this, waitersOffset, q, null)) {
                 for (;;) {
@@ -157,12 +157,12 @@ public abstract class AbstractFuture<V> {
         boolean queued = false;
         for (;;) {
             int s = state;
-            if (s > COMPLETING) { // 任务执行完成
+            if (s > DOING) { // 任务执行完成
                 if (q != null) {
                     q.thread = null;
                 }
                 return s; // 返回任务状态
-            } else if (s == COMPLETING) { // 正在完成中, 让出CPU
+            } else if (s == DOING) { // 正在完成中, 让出CPU
                 Thread.yield();
             } else if (Thread.interrupted()) {
                 removeWaiter(q);
@@ -193,7 +193,7 @@ public abstract class AbstractFuture<V> {
                 // the number of nanoseconds for which it is faster to spin
                 // rather than to use timed park.
                 if (parkNanos > SPIN_FOR_TIMEOUT_THRESHOLD
-                        && state < COMPLETING) {
+                        && state < DOING) {
                     LockSupport.parkNanos(this, parkNanos);
                 }
             } else { // 直接阻塞当前线程
@@ -242,11 +242,11 @@ public abstract class AbstractFuture<V> {
     public String toString() {
         final String status;
         switch (state) {
-            case NORMAL:
+            case COMPLETED:
                 status = "[Completed normally]";
                 break;
             case EXCEPTIONAL:
-                status = "[Completed exceptionally: " + outcome + "]";
+                status = "[Completed exceptionally: " + result + "]";
                 break;
             default:
                 status = "[Not completed]";

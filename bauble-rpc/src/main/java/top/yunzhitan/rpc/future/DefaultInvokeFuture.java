@@ -13,19 +13,18 @@ import top.yunzhitan.rpc.exception.BizException;
 import top.yunzhitan.rpc.exception.RemoteException;
 import top.yunzhitan.rpc.exception.SerializationException;
 import top.yunzhitan.rpc.exception.TimeoutException;
-import top.yunzhitan.rpc.model.ResponseWrapper;
 import top.yunzhitan.rpc.model.RpcResponse;
 import top.yunzhitan.transport.Status;
 
 import java.net.SocketAddress;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implements InvokeFuture<V> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultInvokeFuture.class);
-
-
 
     private static final long DEFAULT_TIMEOUT_NANOSECONDS = TimeUnit.MILLISECONDS.toNanos(Constants.DEFAULT_TIMEOUT);
 
@@ -41,11 +40,13 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
     private volatile boolean sent = false;
 
     private ConsumerHook[] hooks = ConsumerHook.EMPTY_HOOKS;
+    private CopyOnWriteArrayList
 
 
     public static <T> DefaultInvokeFuture<T> with(
             long invokeId, Channel channel, Class<T> returnType, long timeoutMillis, DispatchType dispatchType) {
-
+        Vector vector = new Vector();
+        vector.get()
         return new DefaultInvokeFuture<>(invokeId, channel, returnType, timeoutMillis, dispatchType);
     }
 
@@ -92,14 +93,14 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
     @Override
     protected void notifyListener0(Listener<V> listener, int state, Object x) {
         try {
-            if (state == NORMAL) {
+            if (state == COMPLETED) {
                 listener.complete((V) x);
             } else {
                 listener.failure((Throwable) x);
             }
         } catch (Throwable t) {
             logger.error("An exception was thrown by {}.{}, {}.",
-                    listener.getClass().getName(), state == NORMAL ? "complete()" : "failure()", t);
+                    listener.getClass().getName(), state == COMPLETED ? "complete()" : "failure()", t);
         }
     }
 
@@ -118,12 +119,11 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
     }
 
     @SuppressWarnings("all")
-    private void doReceived(RpcResponse response) {
-        byte status = response.getStatus();
+    private void doReceivedResponse(RpcResponse response) {
+        Status status = response.getStatus();
 
-        if (status == Status.OK.value()) {
-            ResponseWrapper wrapper = response.getWrapper();
-            set((V) wrapper.getResult());
+        if (status == Status.OK) {
+            set((V)response.getResult());
         } else {
             setException(status, response);
         }
@@ -134,25 +134,21 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
         }
     }
 
-    private void setException(byte status, RpcResponse response) {
+    private void setException(Status status, RpcResponse response) {
         Throwable cause;
-        if (status == Status.SERVER_TIMEOUT.value()) {
+        if (status == Status.SERVER_TIMEOUT) {
             cause = new TimeoutException(channel.remoteAddress(), Status.SERVER_TIMEOUT);
-        } else if (status == Status.CLIENT_TIMEOUT.value()) {
+        } else if (status == Status.CLIENT_TIMEOUT) {
             cause = new TimeoutException(channel.remoteAddress(), Status.CLIENT_TIMEOUT);
-        } else if (status == Status.DESERIALIZATION_FAIL.value()) {
-            ResponseWrapper wrapper = response.getWrapper();
-            cause = (SerializationException) wrapper.getResult();
-        } else if (status == Status.SERVICE_EXPECTED_ERROR.value()) {
-            ResponseWrapper wrapper = response.getWrapper();
-            cause = (Throwable) wrapper.getResult();
-        } else if (status == Status.SERVICE_UNEXPECTED_ERROR.value()) {
-            ResponseWrapper wrapper = response.getWrapper();
-            String message = String.valueOf(wrapper.getResult());
+        } else if (status == Status.DESERIALIZATION_FAIL) {
+            cause = (SerializationException) response.getResult();
+        } else if (status == Status.SERVICE_EXPECTED_ERROR) {
+            cause = (Throwable) response.getResult();
+        } else if (status == Status.SERVICE_UNEXPECTED_ERROR) {
+            String message = String.valueOf(response.getResult());
             cause = new BizException(message, channel.remoteAddress());
         } else {
-            ResponseWrapper wrapper = response.getWrapper();
-            Object result = wrapper.getResult();
+            Object result = response.getResult();
             if (result != null && result instanceof RemoteException) {
                 cause = (RemoteException) result;
             } else {
@@ -162,8 +158,8 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
         setException(cause);
     }
 
-    public static void received(Channel channel, RpcResponse response) {
-        long invokeId = response.getId();
+    public static void receiveResponse(Channel channel, RpcResponse response) {
+        long invokeId = response.getInvokeId();
         DefaultInvokeFuture<?> future = roundFutures.remove(invokeId);
         if (future == null) {
             // 广播场景下做出了一点让步, 多查询了一次roundFutures
@@ -174,7 +170,7 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
             return;
         }
 
-        future.doReceived(response);
+        future.doReceivedResponse(response);
     }
 
     private static String subInvokeId(Channel channel, long invokeId) {
@@ -216,7 +212,7 @@ public class DefaultInvokeFuture<V> extends AbstructListenableFuture<V> implemen
                 RpcResponse response = new RpcResponse(future.invokeId);
                 response.setStatus(future.sent ? Status.SERVER_TIMEOUT : Status.CLIENT_TIMEOUT);
 
-                DefaultInvokeFuture.received(future.channel, response);
+                DefaultInvokeFuture.receiveResponse(future.channel, response);
             }
         }
     }

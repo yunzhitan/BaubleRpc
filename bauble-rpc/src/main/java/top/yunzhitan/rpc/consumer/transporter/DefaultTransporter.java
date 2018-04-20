@@ -1,41 +1,34 @@
 package top.yunzhitan.rpc.consumer.transporter;
 
-import io.netty.channel.Channel;
-import top.yunzhitan.rpc.ConsumerHook;
+import top.yunzhitan.Util.SocketAddress;
+import top.yunzhitan.rpc.consumer.loadbalance.LoadBalancer;
+import top.yunzhitan.rpc.future.DefaultInvokeFuture;
 import top.yunzhitan.rpc.future.InvokeFuture;
-import top.yunzhitan.rpc.model.MethodSpecialConfig;
 import top.yunzhitan.rpc.model.RpcRequest;
 import top.yunzhitan.serialization.Serializer;
+import top.yunzhitan.transport.Client;
+import top.yunzhitan.transport.RemotePeer;
+import top.yunzhitan.transport.RequestMessage;
 
-import java.util.List;
-
-public class DefaultTransporter implements Transporter {
+public class DefaultTransporter extends AbstractTransporter {
 
     private LoadBalancer loadBalancer;
-    private Long timeoutMills;
-    private Serializer serializer;
 
-    private Channel selectChannel() {
-        
+    public DefaultTransporter(Serializer serializer, Client client) {
+        super(serializer, client);
     }
+
 
     @Override
     public <T> InvokeFuture<T> sendMessage(RpcRequest request, Class<T> returnType) {
-        return null;
-    }
+        Serializer serializer =  getSerializer();
+        RequestMessage message = new RequestMessage();
 
-    @Override
-    public Transporter hooks(List<ConsumerHook> hooks) {
-        return null;
-    }
+        RemotePeer remotePeer = loadBalancer.selectPeer();
+        byte serialize_code = serializer.code();
+        byte[] bytes = serializer.writeObject(request);
+        message.setBytes(bytes);
 
-    @Override
-    public Transporter timeoutMillis(long timeoutMillis) {
-        return null;
-    }
-
-    @Override
-    public Transporter methodSpecialConfigs(List<MethodSpecialConfig> methodSpecialConfigs) {
-        return null;
+        DefaultInvokeFuture<T> future = DefaultInvokeFuture.with()
     }
 }

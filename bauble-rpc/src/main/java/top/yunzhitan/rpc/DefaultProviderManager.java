@@ -2,10 +2,10 @@ package top.yunzhitan.rpc;
 
 import top.yunzhitan.Util.BaubleServiceLoader;
 import top.yunzhitan.common.Constants;
-import top.yunzhitan.registry.RegisterMeta;
+import top.yunzhitan.registry.URL;
 import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.registry.RegistryType;
-import top.yunzhitan.rpc.model.ServiceMeta;
+import top.yunzhitan.rpc.model.Service;
 import top.yunzhitan.rpc.model.ServiceProvider;
 import top.yunzhitan.rpc.provider.DefaultServiceContainer;
 import top.yunzhitan.rpc.provider.ProviderInitializer;
@@ -81,9 +81,9 @@ public class DefaultProviderManager implements ProviderManager {
 
     @Override
     public void publish(ServiceProvider serviceWrapper) {
-        ServiceMeta metadata = serviceWrapper.getMetadata();
+        Service metadata = serviceWrapper.getMetadata();
 
-        RegisterMeta meta = new RegisterMeta(socketAddress.getHostName(),socketAddress.getPort());
+        URL meta = new URL(socketAddress.getHostName(),socketAddress.getPort());
         meta.setGroup(metadata.getGroup());
         meta.setServiceName(metadata.getServiceName());
         meta.setVersion(metadata.getVersion());
@@ -133,9 +133,9 @@ public class DefaultProviderManager implements ProviderManager {
 
     @Override
     public void unpublish(ServiceProvider serviceWrapper) {
-        ServiceMeta metadata = serviceWrapper.getMetadata();
+        Service metadata = serviceWrapper.getMetadata();
 
-        RegisterMeta meta = new RegisterMeta(socketAddress.getHostName(),socketAddress.getPort());
+        URL meta = new URL(socketAddress.getHostName(),socketAddress.getPort());
         meta.setGroup(metadata.getGroup());
         meta.setServiceName(metadata.getServiceName());
         meta.setVersion(metadata.getVersion());

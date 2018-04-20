@@ -107,7 +107,7 @@ public class TracingUtil {
             value = runtime.getName();
         } catch (Throwable t) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Could not invoke ManagementFactory.getRuntimeMXBean().getName(), {}.", t);
+                logger.debug("Could not filter ManagementFactory.getRuntimeMXBean().getName(), {}.", t);
             }
         }
 

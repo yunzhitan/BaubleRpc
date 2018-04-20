@@ -8,5 +8,5 @@ public interface IdServiceFactory {
      * @return
      */
 
-    public Long getIdByBizTag(String biztag);
+    Long getIdByBizTag(String biztag);
 }

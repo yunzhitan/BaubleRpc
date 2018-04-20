@@ -3,7 +3,7 @@ package top.yunzhitan.rpc.consumer.proxy;
 import com.google.common.collect.Lists;
 import top.yunzhitan.Util.SocketAddress;
 import top.yunzhitan.protocol.RpcProtocal;
-import top.yunzhitan.rpc.ConsunerManager;
+import top.yunzhitan.rpc.ConnectionManager;
 import top.yunzhitan.rpc.DispatchType;
 import top.yunzhitan.rpc.cluster.ClusterType;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
@@ -12,8 +12,7 @@ import top.yunzhitan.rpc.invoker.InvokerType;
 import top.yunzhitan.rpc.invoker.SyncInvoker;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
-import top.yunzhitan.rpc.model.ServiceMeta;
-import top.yunzhitan.rpc.service.Service;
+import top.yunzhitan.rpc.model.Service;
 import top.yunzhitan.transport.Directory;
 
 import java.lang.reflect.InvocationHandler;
@@ -40,7 +39,7 @@ public class ProxyFactory<T> {
     //provider地址
     private List<SocketAddress> addresses;
 
-    private ConsunerManager consunerManager;
+    private ConnectionManager connectionManager;
 
     private InvokerType invokeType = InvokerType.getDefault();
     private DispatchType dispatchType;
@@ -87,12 +86,12 @@ public class ProxyFactory<T> {
 
     public ProxyFactory<T> directory(Directory directory) {
         return group(directory.getGroup())
-                .providerName(directory.getServiceProviderName())
+                .providerName(directory.getServiceName())
                 .version(directory.getVersion());
     }
 
-    public ProxyFactory<T> client(ConsunerManager consunerManager) {
-        this.consunerManager = consunerManager;
+    public ProxyFactory<T> client(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
         return this;
     }
 
@@ -150,7 +149,7 @@ public class ProxyFactory<T> {
     public T newProxyInstance() {
         // check arguments
 
-        Service annotation = interfaceClass.getAnnotation(Service.class);
+        top.yunzhitan.rpc.service.Service annotation = interfaceClass.getAnnotation(top.yunzhitan.rpc.service.Service.class);
 
         if (annotation != null) {
             group = annotation.group();
@@ -163,13 +162,13 @@ public class ProxyFactory<T> {
         }
 
         // metadata
-        ServiceMeta metadata = new ServiceMeta(
+        Service metadata = new Service(
                 group,
                 providerName,
                 version
         );
 
-        JConnector<JConnection> connector = consunerManager.connector();
+        JConnector<JConnection> connector = connectionManager.connector();
         for (SocketAddress address : addresses) {
             connector.addChannelGroup(metadata, connector.group(address));
         }
@@ -184,10 +183,10 @@ public class ProxyFactory<T> {
         Object handler;
         switch (invokeType) {
             case SYNC:
-                handler = new SyncInvoker(consunerManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new SyncInvoker(connectionManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             case ASYNC:
-                handler = new AsyncInvoker(consunerManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new AsyncInvoker(connectionManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             default:
                 throw new Throwable("invokeType: " + invokeType);

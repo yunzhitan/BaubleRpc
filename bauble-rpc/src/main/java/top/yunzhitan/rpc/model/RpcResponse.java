@@ -8,64 +8,50 @@ import java.io.Serializable;
 
 public class RpcResponse implements Serializable{
 
-    private static final long serialVersionUID = 38472457357437534L;
-    private ResponseMessage responseMessage;
-    private ResponseWrapper wrapper;
+    private static final long serialVersionUID = -1126932930252953428L;
 
-    public RpcResponse(long id) {
-        responseMessage = new ResponseMessage(id);
+    private ResultWrapper result; // 响应结果对象, 也可能是异常对象, 由响应状态决定
+
+    private Status status;
+
+    private Long invokeId;
+
+    public RpcResponse(Long invokeId) {
+        this.invokeId = invokeId;
     }
 
-    public RpcResponse(ResponseMessage responseMessage) {
-        this.responseMessage = responseMessage;
+    public RpcResponse() {
     }
 
-
-    public RpcResponse(ResponseMessage responseMessage, ResponseWrapper wrapper) {
-        this.responseMessage = responseMessage;
-        this.wrapper = wrapper;
+    public Object getResult() {
+        return result.getResult();
     }
 
-    public long getId() {
-        return responseMessage.getResponseId();
+    public void setResult(ResultWrapper result) {
+        this.result = result;
     }
 
-    public byte getStatus() {
-        return responseMessage.getStatus();
-    }
-
-    public void setStatus(byte status) {
-        responseMessage.setStatus(status);
+    public Status getStatus() {
+        return status;
     }
 
     public void setStatus(Status status) {
-        responseMessage.setStatus(status.value());
+        this.status = status;
     }
 
-    public byte getSerializerCode() {
-        return responseMessage.serializerCode();
+    public Long getInvokeId() {
+        return invokeId;
     }
 
-    public void bytes(byte serializerCode, byte[] bytes) {
-        responseMessage.bytes(serializerCode, bytes);
+    public void setInvokeId(Long invokeId) {
+        this.invokeId = invokeId;
     }
 
-
-
-
-    public ResponseMessage getResponseMessage() {
-        return responseMessage;
+    @Override
+    public String toString() {
+        return "ResultWrapper{" +
+                "result=" + result +
+                '}';
     }
 
-    public void setResponseMessage (ResponseMessage responseMessage) {
-        this.responseMessage = responseMessage;
-    }
-
-    public ResponseWrapper getWrapper() {
-        return wrapper;
-    }
-
-    public void setWrapper(ResponseWrapper wrapper) {
-        this.wrapper = wrapper;
-    }
 }

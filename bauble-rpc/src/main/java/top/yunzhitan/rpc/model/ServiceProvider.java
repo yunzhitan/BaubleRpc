@@ -2,7 +2,6 @@ package top.yunzhitan.rpc.model;
 
 import top.yunzhitan.Util.Pair;
 import top.yunzhitan.rpc.provider.ProviderInterceptor;
-import top.yunzhitan.rpc.service.Service;
 import top.yunzhitan.rpc.service.ServiceImpl;
 
 import java.lang.reflect.Method;
@@ -17,7 +16,7 @@ public class ServiceProvider {
     private Object serviceProvider;  //服务提供对象
     private ProviderInterceptor[] interceptors; //服务局部拦截器 可不设置
     private Class<?> interfaceClass; //接口类型
-    private ServiceMeta metadata; //服务元数据信息
+    private Service metadata; //服务元数据信息
     private int weight;           //权重   可不设置
     private Executor executor;       //服务私有线程池 用于延迟初始化设置 可不设置
     private Map<String, List<Pair<Class<?>[], Class<?>[]>>> extensions; //方法名称及参数，抛出异常类型
@@ -27,7 +26,7 @@ public class ServiceProvider {
         private Object serviceProvider;  //服务提供对象
         private ProviderInterceptor[] interceptors; //拦截器
         private Class<?> interfaceClass; //接口类型
-        private ServiceMeta metadata; //服务元数据信息
+        private Service metadata; //服务元数据信息
         private int weight;           //权重
         private Executor executor;       //服务私有线程池
         private Map<String, List<Pair<Class<?>[], Class<?>[]>>> extensions;
@@ -48,7 +47,7 @@ public class ServiceProvider {
             Class<?> providerClass = serviceProvider.getClass();
 
             ServiceImpl implAnnotation = null;
-            Service ifAnnotation = null;
+            top.yunzhitan.rpc.service.Service ifAnnotation = null;
             for (Class<?> cls = providerClass; cls != Object.class; cls = cls.getSuperclass()) {
                 if (implAnnotation == null) {
                     implAnnotation = cls.getAnnotation(ServiceImpl.class);
@@ -57,7 +56,7 @@ public class ServiceProvider {
                 Class<?>[] interfaces = cls.getInterfaces();
                 if (interfaces != null) {
                     for (Class<?> i : interfaces) {
-                        ifAnnotation = i.getAnnotation(Service.class);
+                        ifAnnotation = i.getAnnotation(top.yunzhitan.rpc.service.Service.class);
                         if (ifAnnotation == null) {
                             continue;
                         }
@@ -71,7 +70,7 @@ public class ServiceProvider {
                     break;
                 }
             }
-            metadata = new ServiceMeta(ifAnnotation.group(),ifAnnotation.name(),interfaceClass.getName());
+            metadata = new Service(ifAnnotation.group(),ifAnnotation.name(),interfaceClass.getName());
             // method's extensions
             //
             // key:     method name
@@ -129,7 +128,7 @@ public class ServiceProvider {
         return interfaceClass;
     }
 
-    public ServiceMeta getMetadata() {
+    public Service getMetadata() {
         return metadata;
     }
 

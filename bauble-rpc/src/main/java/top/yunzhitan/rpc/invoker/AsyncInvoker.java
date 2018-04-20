@@ -1,7 +1,7 @@
 package top.yunzhitan.rpc.invoker;
 
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
-import top.yunzhitan.rpc.model.ServiceMeta;
+import top.yunzhitan.rpc.model.Service;
 import top.yunzhitan.rpc.future.InvokeFuture;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class AsyncInvoker extends AbstructInvoker {
     public AsyncInvoker(String appName,
-                        ServiceMeta metadata,
+                        Service metadata,
                         Transporter transporter,
                         ClusterTypeConfig defaultStrategy,
                         List<MethodSpecialConfig> methodSpecialConfigs) {

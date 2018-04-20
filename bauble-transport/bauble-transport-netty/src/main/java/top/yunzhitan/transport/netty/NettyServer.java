@@ -47,7 +47,7 @@ public class NettyServer implements Server {
                             .channel(NioServerSocketChannel.class)
                             .childHandler(new ChannelInitializer<SocketChannel>() {
                                 @Override
-                                protected void initChannel(SocketChannel ch) throws Exception {
+                                protected void initChannel(SocketChannel ch) {
                                     ch.pipeline().addLast(
                                             new IdleStateHandler(60,0,0, TimeUnit.SECONDS),
                                             new ProtocolDecoder(),

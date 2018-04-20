@@ -3,7 +3,7 @@ package top.yunzhitan.rpc.invoker;
 import top.yunzhitan.rpc.cluster.ClusterInvoker;
 import top.yunzhitan.rpc.cluster.ClusterUtil;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
-import top.yunzhitan.rpc.model.ServiceMeta;
+import top.yunzhitan.rpc.model.Service;
 import top.yunzhitan.rpc.filter.*;
 import top.yunzhitan.rpc.model.*;
 import top.yunzhitan.rpc.tracing.TraceId;
@@ -15,16 +15,16 @@ public abstract class AbstructInvoker {
 
 
     private final String appName;            //应用名称
-    private final ServiceMeta serviceMeta;   //服务元数据
+    private final Service service;   //服务元数据
     private final ClusterUtil clusterUtil;
 
     public AbstructInvoker(String appName,
-                           ServiceMeta metadata,
+                           Service metadata,
                            Transporter transporter,
                            ClusterTypeConfig defaultStrategy,
                            List<MethodSpecialConfig> methodSpecialConfigs) {
         this.appName = appName;
-        this.serviceMeta = metadata;
+        this.service = metadata;
         clusterUtil = new ClusterUtil(transporter, defaultStrategy, methodSpecialConfigs);
     }
 
@@ -45,7 +45,7 @@ public abstract class AbstructInvoker {
         ClusterInvoker invoker = clusterUtil.findClusterInvoker(methodName);
 
         InvokeContext invokeContext = new InvokeContext(invoker,returnType,sync);
-        InvokeHandler.invoke(request,invokeContext);
+        FilterHandler.filter(request,invokeContext);
         return invokeContext.getResult();
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstructInvoker {
         }
     }
 
-    private static class InvokeHandler {
+    private static class FilterHandler {
 
         private static final FilterChain headFilter;
 
@@ -68,7 +68,7 @@ public abstract class AbstructInvoker {
             headFilter = FilterLoader.loadExtFilters(invokeHandler, Filter.Type.CONSUMER);
         }
 
-        public static <T extends FilterContext> T invoke(RpcRequest request, T invokeCtx) throws Throwable {
+        public static <T extends FilterContext> T filter(RpcRequest request, T invokeCtx) throws Throwable {
             headFilter.doFilter(request, invokeCtx);
             return invokeCtx;
         }

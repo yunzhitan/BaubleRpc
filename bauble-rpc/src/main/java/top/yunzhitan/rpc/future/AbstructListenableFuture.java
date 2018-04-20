@@ -20,7 +20,7 @@ public abstract class AbstructListenableFuture<V> extends AbstractFuture<V> impl
         }
 
         if (isDone()) {
-            notifyListeners(state(), outcome());
+            notifyListeners(state(), result());
         }
 
         return this;
@@ -39,7 +39,7 @@ public abstract class AbstructListenableFuture<V> extends AbstractFuture<V> impl
         }
 
         if (isDone()) {
-            notifyListeners(state(), outcome());
+            notifyListeners(state(), result());
         }
 
         return this;

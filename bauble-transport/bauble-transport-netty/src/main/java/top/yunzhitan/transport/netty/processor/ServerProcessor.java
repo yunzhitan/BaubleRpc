@@ -1,16 +1,17 @@
 package top.yunzhitan.transport.netty.processor;
 
+import io.netty.channel.Channel;
 import top.yunzhitan.transport.RequestMessage;
 import top.yunzhitan.transport.Status;
 
-public interface RequestProcessor {
+public interface ServerProcessor {
 
     /**
      * 由RequestProcessor线程池处理request请求
      * @param channel
      * @param requestMessage request的RequestId
      */
-    void handleRequest(io.netty.channel.Channel channel, RequestMessage requestMessage);
+    void handleRequest(Channel channel, RequestMessage requestMessage);
 
 
     /**
@@ -20,7 +21,7 @@ public interface RequestProcessor {
      * @param status
      * @param t
      */
-    void handleException(io.netty.channel.Channel channel, RequestMessage requestMessage, Status status, Throwable t);
+    void handleException(Channel channel, RequestMessage requestMessage, Status status, Throwable t);
 
     /**
      * 关闭

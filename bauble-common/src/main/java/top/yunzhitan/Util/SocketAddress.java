@@ -1,6 +1,6 @@
 package top.yunzhitan.Util;
 
-public class SocketAddress {
+public class SocketsAddress {
     private String host;
     private int port;
 

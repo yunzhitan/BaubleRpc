@@ -1,21 +1,23 @@
 package top.yunzhitan.registry;
 
 
-import com.yunzhitan.Util.collection.ConcurrentSet;
-import com.yunzhitan.rpc.model.ServiceMeta;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.yunzhitan.Util.collection.ConcurrentSet;
+import top.yunzhitan.rpc.model.Service;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class AbstructRegistryService implements RegistryService {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstructRegistryService.class);
 
-    private final LinkedBlockingQueue<RegisterMeta> queue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<URL> queue = new LinkedBlockingQueue<>();
     /**
      * 用于接受注册信息的线程
      */
@@ -31,11 +33,16 @@ public abstract class AbstructRegistryService implements RegistryService {
     /**
      * provider注册的服务信息
      */
-    private final ConcurrentSet<RegisterMeta> registerMetaSet = new ConcurrentSet<>();
+    private final ConcurrentSet<URL> URLSet = new ConcurrentSet<>();
+    private final ConcurrentMap<Service, RegisterValue> registries = new ConcurrentHashMap<>();
+
     /**
      * consumer订阅的服务信息
      */
-    private final ConcurrentSet<ServiceMeta> subcribeSet = new ConcurrentSet<>();
+    private final ConcurrentSet<Service> subcribeSet = new ConcurrentSet<>();
+    private final ConcurrentMap<Service, CopyOnWriteArrayList<NotifyListener>> subscribeListeners =
+            new ConcurrentHashMap<>();
+
 
     public AbstructRegistryService() {
 
@@ -43,16 +50,16 @@ public abstract class AbstructRegistryService implements RegistryService {
             @Override
             public void run() {
                 while(!shutdown.get()) {
-                    RegisterMeta registerMeta = null;
+                    URL URL = null;
                     try {
-                        registerMeta = queue.take();
-                        doRegister(registerMeta);
+                        URL = queue.take();
+                        doRegister(URL);
                     } catch (InterruptedException e) {
                         logger.warn("register executor interrupted");
                     } catch (Throwable t) {
-                        if(registerMeta != null) {
-                            logger.error("service register {} fail : {}", registerMeta.getServiceMeta(), t);
-                            final RegisterMeta meta = registerMeta;
+                        if(URL != null) {
+                            logger.error("service register {} fail : {}", URL.getService(), t);
+                            final URL meta = URL;
                             scheduleExecutor.schedule(new Runnable() {
 
                                 @Override
@@ -68,66 +75,109 @@ public abstract class AbstructRegistryService implements RegistryService {
     }
 
     @Override
-    public void register(RegisterMeta registry) {
+    public void register(URL registry) {
         queue.add(registry);
     }
 
     @Override
-    public void unRegister(RegisterMeta registry) {
+    public void unRegister(URL registry) {
         if(!queue.remove(registry)) {
             doUnregister(registry);
         }
     }
 
     @Override
-    public void subscribe(ServiceMeta registry) {
+    public void subscribe(Service registry, NotifyListener listener) {
+        CopyOnWriteArrayList<NotifyListener> listeners = subscribeListeners.get(registry);
 
+        if(listeners == null) {
+            CopyOnWriteArrayList<NotifyListener> newListeners = new CopyOnWriteArrayList<>();
+            listeners = subscribeListeners.putIfAbsent(registry,newListeners);
+            if(listeners == null) {
+                listeners = newListeners;
+            }
+        }
+        listeners.add(listener);
+        subcribeSet.add(registry);
+        doSubscribe(registry);
     }
 
     @Override
-    public Collection<RegisterMeta> lookup(ServiceMeta metadata) {
+    public Collection<URL> lookup(Service metadata) {
+            RegisterValue value = registries.get(metadata);
+
+            if (value == null) {
+                return Collections.emptyList();
+            }
+
+            final Lock readLock = value.lock.readLock();
+            readLock.lock();
+            try {
+                return Lists.newArrayList(value.metaSet);
+            } finally {
+                readLock.unlock();
+            }
+    }
+
+    @Override
+    public Map<Service, Integer> getConsumers() {
         return null;
     }
 
     @Override
-    public Map<ServiceMeta, Integer> getConsumers() {
-        return null;
-    }
-
-    @Override
-    public Map<RegisterMeta, RegistryState> getProviders() {
+    public Map<URL, RegistryState> getProviders() {
         return null;
     }
 
     @Override
     public boolean isShutdown() {
-        return false;
+        return shutdown.get();
     }
 
     @Override
     public void shutdownGracefully() {
-
-    }
-
-    protected void notify(ServiceMeta meta,NotifyEvent event,RegisterMeta... registerMetas) {
-
-        if(registerMetas == null || registerMetas.length == 0) {
-            return;
+        if(!shutdown.getAndSet(true)) {
+            registerExecutor.shutdownNow();
+            scheduleExecutor.shutdownNow();
         }
     }
 
-    public abstract void doRegister(RegisterMeta registerMeta);
+    protected void notify(
+            Service service, NotifyEvent event, URL... array) {
 
-    public abstract void doSubscribe(ServiceMeta registerMeta);
-
-    public abstract void doUnregister(RegisterMeta registerMeta);
-
-
-    public ConcurrentSet<RegisterMeta> getRegisterMetaSet() {
-        return registerMetaSet;
+        if (array == null || array.length == 0) {
+            return;
+        }
+        CopyOnWriteArrayList<NotifyListener> listeners = subscribeListeners.get(service);
+        if (listeners != null) {
+            for (NotifyListener l : listeners) {
+                for (URL m : array) {
+                    l.notify(m, event);
+                }
+            }
+        }
     }
 
-    public ConcurrentSet<ServiceMeta> getSubcribeSet() {
+    public abstract void doRegister(URL URL);
+
+    public abstract void doSubscribe(Service registerMeta);
+
+    public abstract void doUnregister(URL URL);
+
+
+    public ConcurrentSet<URL> getURLSet() {
+        return URLSet;
+    }
+
+    public ConcurrentSet<Service> getSubcribeSet() {
         return subcribeSet;
     }
+
+
+    protected static class RegisterValue {
+        private long version = Long.MIN_VALUE;
+        private final Set<URL> metaSet = new HashSet<>();
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(); // segment-lock
+    }
+
 }

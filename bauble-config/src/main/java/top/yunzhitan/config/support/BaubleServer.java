@@ -18,7 +18,7 @@ public class BaubleServer implements InitializingBean{
     private String registryServerAddress; // 注册中心地址 [host1:port1,host2:port2....]
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         SocketAddress address = new InetSocketAddress(ipAddr,boundPort);
         providerManager = new DefaultProviderManager(address,registryType);
     }

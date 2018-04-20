@@ -27,7 +27,7 @@ public class ProviderBean implements ApplicationContextAware,InitializingBean,Ap
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         RegistryLocal registry =
     }
 

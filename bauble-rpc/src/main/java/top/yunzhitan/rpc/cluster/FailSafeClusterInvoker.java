@@ -30,7 +30,7 @@ public class FailSafeClusterInvoker implements ClusterInvoker {
     }
 
     @Override
-    public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) throws Exception {
+    public <T> InvokeFuture<T> invoke(RpcRequest request, Class<T> returnType) {
         return null;
     }
 }

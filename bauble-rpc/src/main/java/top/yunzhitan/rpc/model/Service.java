@@ -1,5 +1,7 @@
 package top.yunzhitan.rpc.model;
 
+import top.yunzhitan.transport.Directory;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -7,7 +9,7 @@ import java.util.Objects;
  * 服务的元数据
  */
 
-public class ServiceMeta implements Serializable {
+public class Service extends Directory implements Serializable {
 
     private static final long serialVersionUID = -237264327643278L;
 
@@ -15,13 +17,19 @@ public class ServiceMeta implements Serializable {
     private String serviceName; //服务名称
     private String version;   //服务版本号
 
-    public ServiceMeta() {
+    public Service() {
     }
 
-    public ServiceMeta(String group, String serviceName, String version) {
+    public Service(String group, String serviceName, String version) {
         this.group = group;
         this.serviceName = serviceName;
         this.version = version;
+    }
+
+    public Service(Directory directory) {
+        this.group = directory.getGroup();
+        this.serviceName = directory.getServiceName();
+        this.version = directory.getVersion();
     }
 
     public static long getSerialVersionUID() {
@@ -56,7 +64,7 @@ public class ServiceMeta implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ServiceMeta that = (ServiceMeta) o;
+        Service that = (Service) o;
         return Objects.equals(group, that.group) &&
                 Objects.equals(serviceName, that.serviceName) &&
                 Objects.equals(version, that.version);
@@ -70,7 +78,7 @@ public class ServiceMeta implements Serializable {
 
     @Override
     public String toString() {
-        return "ServiceMeta{" +
+        return "Service{" +
                 "group='" + group + '\'' +
                 ", serviceName='" + serviceName + '\'' +
                 ", version='" + version + '\'' +
