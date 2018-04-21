@@ -21,7 +21,6 @@ import top.yunzhitan.transport.netty.handler.NettyChannelPoolHandler;
 import top.yunzhitan.transport.processor.ClientProcessor;
 
 import java.net.SocketAddress;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -36,6 +35,7 @@ public class NettyClient implements Client{
      */
     private ConcurrentMap<SocketAddress,RemotePeer> remotepeerMap = new ConcurrentHashMap<>();
     private RemotePeerManager peerManager = new RemotePeerManager();
+    private String appName;
     private Bootstrap bootstrap;
     private EventLoopGroup workerGroup;
     private int nWorkers = SystemPropertyUtil.AVAILABLE_PROCESSORS;
@@ -73,13 +73,13 @@ public class NettyClient implements Client{
     }
 
    @Override
-    public ConnectionFuture writeMessage(SocketAddress address, RequestMessage message, top.yunzhitan.transport.FutureListener listener) {
-        return writeMessage(address,message,false,listener);
+    public void writeMessage(SocketAddress address, RequestMessage message, top.yunzhitan.transport.FutureListener listener) {
+        writeMessage(address,message,false,listener);
     }
 
 
     @Override
-    public ConnectionFuture writeMessage(SocketAddress address, RequestMessage message, boolean async, top.yunzhitan.transport.FutureListener listener) {
+    public void writeMessage(SocketAddress address, RequestMessage message, boolean async, top.yunzhitan.transport.FutureListener listener) {
         ChannelPool channelPool = channelPoolMap.get(address);
         if(channelPool != null) {
             Future<Channel> future = channelPool.acquire();
@@ -95,7 +95,7 @@ public class NettyClient implements Client{
                                     listener.operationSuccess(channel);
                                 }
                                 else {
-                                    listener.operationFailure(channel,channelFuture.cause());
+                                    listener.operationFailure(channelFuture.cause());
                                 }
                             }
                         });
@@ -144,6 +144,8 @@ public class NettyClient implements Client{
         return remove;
     }
 
+
+
     @Override
     public boolean isDirectoryAvailable(Directory directory) {
         CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(directory);
@@ -159,19 +161,29 @@ public class NettyClient implements Client{
     public void tryConnect(SocketAddress address, top.yunzhitan.transport.FutureListener listener) {
         ChannelPool channelPool = channelPoolMap.get(address);
         Future<Channel> future = channelPool.acquire(); //acquire时自动建立Channel连接
-        future.addListener( (channelFuture)-> {
-            if(channelFuture.isSuccess()) {
-                Channel channel = (Channel)channelFuture.getNow();
+        future.addListener((channelFuture) -> {
+            if (channelFuture.isSuccess()) {
+                Channel channel = (Channel) channelFuture.getNow();
                 listener.operationSuccess(channel);
                 channelPool.release(channel);
-            }
-            else {
+            } else {
                 listener.operationFailure(channelFuture.cause());
             }
         });
+    }
+
+    @Override
+    public CopyOnWriteArrayList<RemotePeer> getRemotePeerList(Directory directory) {
+        return peerManager.find(directory);
+    }
 
     @Override
     public void shutdownGracefully() {
         workerGroup.shutdownGracefully();
+    }
+
+    @Override
+    public String getAppName() {
+        return appName;
     }
 }

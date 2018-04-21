@@ -5,7 +5,7 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.yunzhitan.transport.netty.processor.ClientProcessor;
+import top.yunzhitan.transport.processor.ClientProcessor;
 
 import java.util.concurrent.TimeUnit;
 

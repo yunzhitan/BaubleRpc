@@ -15,7 +15,7 @@ public class RpcRequest implements Serializable{
 
     private Object[] arguments;
 
-    private TraceId traceId;
+    private Service service;
 
 
     public String getAppName() {
@@ -42,12 +42,12 @@ public class RpcRequest implements Serializable{
         this.arguments = arguments;
     }
 
-    public TraceId getTraceId() {
-        return traceId;
+    public Service getService() {
+        return service;
     }
 
-    public void setTraceId(TraceId traceId) {
-        this.traceId = traceId;
+    public void setService(Service service) {
+        this.service = service;
     }
 
     @Override

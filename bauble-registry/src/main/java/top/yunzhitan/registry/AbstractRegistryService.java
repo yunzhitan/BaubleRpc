@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public abstract class AbstructRegistryService implements RegistryService {
+public abstract class AbstractRegistryService implements RegistryService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstructRegistryService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractRegistryService.class);
 
-    private final LinkedBlockingQueue<URL> queue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<RegistryConfig> queue = new LinkedBlockingQueue<>();
     /**
      * 用于接受注册信息的线程
      */
@@ -33,33 +33,33 @@ public abstract class AbstructRegistryService implements RegistryService {
     /**
      * provider注册的服务信息
      */
-    private final ConcurrentSet<URL> URLSet = new ConcurrentSet<>();
+    private final ConcurrentSet<RegistryConfig> registered = new ConcurrentSet<>();
     private final ConcurrentMap<Service, RegisterValue> registries = new ConcurrentHashMap<>();
 
     /**
      * consumer订阅的服务信息
      */
-    private final ConcurrentSet<Service> subcribeSet = new ConcurrentSet<>();
-    private final ConcurrentMap<Service, CopyOnWriteArrayList<NotifyListener>> subscribeListeners =
+    private final ConcurrentSet<Service> subscribeSet = new ConcurrentSet<>();
+    private final ConcurrentMap<Service, CopyOnWriteArrayList<NotifyListener>> subscribed =
             new ConcurrentHashMap<>();
 
 
-    public AbstructRegistryService() {
+    public AbstractRegistryService() {
 
         registerExecutor.execute(new Runnable() {
             @Override
             public void run() {
                 while(!shutdown.get()) {
-                    URL URL = null;
+                    RegistryConfig RegistryConfig = null;
                     try {
-                        URL = queue.take();
-                        doRegister(URL);
+                        RegistryConfig = queue.take();
+                        doRegister(RegistryConfig);
                     } catch (InterruptedException e) {
                         logger.warn("register executor interrupted");
                     } catch (Throwable t) {
-                        if(URL != null) {
-                            logger.error("service register {} fail : {}", URL.getService(), t);
-                            final URL meta = URL;
+                        if(RegistryConfig != null) {
+                            logger.error("service register {} fail : {}", RegistryConfig.getService(), t);
+                            final RegistryConfig meta = RegistryConfig;
                             scheduleExecutor.schedule(new Runnable() {
 
                                 @Override
@@ -75,35 +75,28 @@ public abstract class AbstructRegistryService implements RegistryService {
     }
 
     @Override
-    public void register(URL registry) {
+    public void register(RegistryConfig registry) {
         queue.add(registry);
     }
 
     @Override
-    public void unRegister(URL registry) {
+    public void unRegister(RegistryConfig registry) {
         if(!queue.remove(registry)) {
             doUnregister(registry);
         }
     }
 
     @Override
-    public void subscribe(Service registry, NotifyListener listener) {
-        CopyOnWriteArrayList<NotifyListener> listeners = subscribeListeners.get(registry);
-
-        if(listeners == null) {
-            CopyOnWriteArrayList<NotifyListener> newListeners = new CopyOnWriteArrayList<>();
-            listeners = subscribeListeners.putIfAbsent(registry,newListeners);
-            if(listeners == null) {
-                listeners = newListeners;
-            }
-        }
+    public void subscribe(Service service, NotifyListener listener) {
+        CopyOnWriteArrayList<NotifyListener> listeners =
+                subscribed.computeIfAbsent(service,k->new CopyOnWriteArrayList<>());
         listeners.add(listener);
-        subcribeSet.add(registry);
-        doSubscribe(registry);
+        subscribeSet.add(service);
+        doSubscribe(service);
     }
 
     @Override
-    public Collection<URL> lookup(Service metadata) {
+    public Collection<RegistryConfig> lookup(Service metadata) {
             RegisterValue value = registries.get(metadata);
 
             if (value == null) {
@@ -125,7 +118,7 @@ public abstract class AbstructRegistryService implements RegistryService {
     }
 
     @Override
-    public Map<URL, RegistryState> getProviders() {
+    public Map<RegistryConfig, RegistryState> getProviders() {
         return null;
     }
 
@@ -143,40 +136,40 @@ public abstract class AbstructRegistryService implements RegistryService {
     }
 
     protected void notify(
-            Service service, NotifyEvent event, URL... array) {
+            Service service, NotifyEvent event, RegistryConfig... array) {
 
         if (array == null || array.length == 0) {
             return;
         }
-        CopyOnWriteArrayList<NotifyListener> listeners = subscribeListeners.get(service);
+        CopyOnWriteArrayList<NotifyListener> listeners = subscribed.get(service);
         if (listeners != null) {
             for (NotifyListener l : listeners) {
-                for (URL m : array) {
-                    l.notify(m, event);
+                for (RegistryConfig registryConfig : array) {
+                    l.notify(registryConfig, event);
                 }
             }
         }
     }
 
-    public abstract void doRegister(URL URL);
+    public abstract void doRegister(RegistryConfig RegistryConfig);
 
     public abstract void doSubscribe(Service registerMeta);
 
-    public abstract void doUnregister(URL URL);
+    public abstract void doUnregister(RegistryConfig RegistryConfig);
 
 
-    public ConcurrentSet<URL> getURLSet() {
-        return URLSet;
+    public ConcurrentSet<RegistryConfig> getRegistered() {
+        return registered;
     }
 
-    public ConcurrentSet<Service> getSubcribeSet() {
-        return subcribeSet;
+    public ConcurrentSet<Service> getSubscribeSet() {
+        return subscribeSet;
     }
 
 
     protected static class RegisterValue {
         private long version = Long.MIN_VALUE;
-        private final Set<URL> metaSet = new HashSet<>();
+        private final Set<RegistryConfig> metaSet = new HashSet<>();
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(); // segment-lock
     }
 

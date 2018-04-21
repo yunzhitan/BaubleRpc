@@ -60,7 +60,7 @@ public class ProtocolEncoder extends MessageToByteEncoder {
         byteBuf.writeShort(ProtocolHeader.MAGIC)
                 .writeByte(sign)
                 .writeByte(status)
-                .writeLong(responseMessage.getResponseId())
+                .writeLong(responseMessage.getInvokeId())
                 .writeInt(length)
                 .writeBytes(bytes);
     }

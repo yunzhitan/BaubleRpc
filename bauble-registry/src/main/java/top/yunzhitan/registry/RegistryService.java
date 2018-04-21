@@ -13,15 +13,15 @@ public interface RegistryService extends Registry {
 
     /**
      * register the service to the registry server
-     * @param registry
+     * @param registryConfig
      */
-    void register(URL registry);
+    void register(RegistryConfig registryConfig);
 
     /**
      * unregister the service to the registry server
-     * @param registry
+     * @param registryConfig
      */
-    void unRegister(URL registry);
+    void unRegister(RegistryConfig registryConfig);
 
     void subscribe(Service registry, NotifyListener listener);
 
@@ -30,7 +30,7 @@ public interface RegistryService extends Registry {
      * @param metadata
      * @return
      */
-    Collection<URL> lookup(Service metadata);
+    Collection<RegistryConfig> lookup(Service metadata);
 
     /**
      * list of all the consumers
@@ -41,7 +41,7 @@ public interface RegistryService extends Registry {
     /**
      * List of the providers
      */
-    Map<URL,RegistryState> getProviders();
+    Map<RegistryConfig,RegistryState> getProviders();
 
     /**
      * Return true if the RegidtryService is shutdown
@@ -53,4 +53,6 @@ public interface RegistryService extends Registry {
      * shutdown
      */
     void shutdownGracefully();
+
+    void destroy();
 }

@@ -21,10 +21,6 @@ import java.net.SocketAddress;
 /**
  * 业务异常
  *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
  */
 public class BizException extends RemoteException {
 

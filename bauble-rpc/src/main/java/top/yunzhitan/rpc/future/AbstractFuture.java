@@ -6,12 +6,6 @@ import top.yunzhitan.Util.UnsafeUtil;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
-/**
- * jupiter
- * org.jupiter.rpc.consumer.future
- *
- * @author jiachun.fjc
- */
 public abstract class AbstractFuture<V> {
 
     @SuppressWarnings("all")
@@ -20,7 +14,7 @@ public abstract class AbstractFuture<V> {
     /**
      * The number of nanoseconds for which it is faster to spin
      * rather than to use timed park. A rough estimate suffices
-     * to improve responsiveness with very short timeouts.
+     * to improve responsiveness newFuture very short timeouts.
      */
     protected static final long SPIN_FOR_TIMEOUT_THRESHOLD = 1000L;
 

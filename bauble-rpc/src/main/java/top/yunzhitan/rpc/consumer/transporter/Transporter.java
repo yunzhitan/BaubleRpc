@@ -14,9 +14,7 @@ public interface Transporter {
 
     <T> InvokeFuture<T> sendMessage(RpcRequest request, Class<T> returnType);
 
-    Transporter hooks(List<ConsumerHook> hooks);
 
     Transporter timeoutMillis(long timeoutMillis);
 
-    Transporter methodSpecialConfigs(List<MethodSpecialConfig> methodSpecialConfigs);
 }

@@ -9,5 +9,5 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public interface LoadBalancer {
 
-    RemotePeer selectPeer(CopyOnWriteArrayList<RemotePeer> peerList);
+    RemotePeer select(CopyOnWriteArrayList<RemotePeer> peerList);
 }

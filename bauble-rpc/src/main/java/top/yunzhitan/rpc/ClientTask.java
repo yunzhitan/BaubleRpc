@@ -8,6 +8,7 @@ import top.yunzhitan.rpc.model.ResultWrapper;
 import top.yunzhitan.rpc.model.RpcResponse;
 import top.yunzhitan.serialization.Serializer;
 import top.yunzhitan.serialization.SerializerFactory;
+import top.yunzhitan.transport.RemotePeer;
 import top.yunzhitan.transport.ResponseMessage;
 
 public class ClientTask implements Runnable {
@@ -26,6 +27,7 @@ public class ClientTask implements Runnable {
         byte[] objectBytes = message.getBytes();
         Serializer serializer = SerializerFactory.getSerializer(message.getSerializerCode());
         RpcResponse response = new RpcResponse();
+        RemotePeer remotePeer = new RemotePeer(channel.remoteAddress());
         ResultWrapper result;
         try {
             result = serializer.readObject(objectBytes,ResultWrapper.class);
@@ -37,9 +39,9 @@ public class ClientTask implements Runnable {
         }
 
         response.setResult(result);
-        response.setInvokeId(message.getResponseId());
+        response.setInvokeId(message.getInvokeId());
         response.setStatus(message.getStatus());
 
-        DefaultInvokeFuture.receiveResponse(channel,response);
+        DefaultInvokeFuture.receiveResponse(remotePeer,response);
     }
 }

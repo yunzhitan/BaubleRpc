@@ -1,11 +1,9 @@
 package top.yunzhitan.registry.zookeeper;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import top.yunzhitan.Util.collection.ConcurrentSet;
-import top.yunzhitan.registry.AbstructRegistryService;
+import top.yunzhitan.registry.AbstractRegistryService;
 import top.yunzhitan.registry.NotifyEvent;
-import top.yunzhitan.registry.URL;
+import top.yunzhitan.registry.RegistryConfig;
 import top.yunzhitan.rpc.model.Service;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -23,12 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class ZookeeperRegistryService extends AbstructRegistryService {
+public class ZookeeperRegistryService extends AbstractRegistryService {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryService.class);
 
@@ -42,11 +40,8 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
 
 
     @Override
-    public void doRegister(URL URL) {
-        String directory = String.format("bauble/provider/%s%s%s",
-                URL.getGroup(),
-                URL.getService(),
-                URL.getVersion());
+    public void doRegister(RegistryConfig registryConfig) {
+        String directory = String.format("bauble/provider/%s", registryConfig.getDirectory());
 
         try {
             if(configClient.checkExists().forPath(directory) == null) {
@@ -63,19 +58,19 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
                 @Override
                 public void processResult(CuratorFramework curatorFramework, CuratorEvent curatorEvent) {
                     if (curatorEvent.getResultCode() == KeeperException.Code.OK.intValue()) {
-                        getURLSet().add(URL);
+                        getRegistered().add(registryConfig);
                     }
-                    logger.info("Register: {} - {}", URL,curatorEvent);
+                    logger.info("Register: {} - {}", registryConfig,curatorEvent);
                 }
             }).forPath(
                     String.format("%s/%s:%s:%s",
                             directory,
-                            URL.getHost(),
-                            URL.getPort(),
-                            URL.getWeight()));
+                            registryConfig.getHost(),
+                            registryConfig.getPort(),
+                            registryConfig.getWeight()));
         } catch (Exception e) {
             if (logger.isWarnEnabled()) {
-                logger.warn("Create register meta: {} failed, {}", URL,e);
+                logger.warn("Create register meta: {} failed, {}", registryConfig,e);
             }
         }
     }
@@ -84,10 +79,7 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
     public void doSubscribe(Service service) {
         PathChildrenCache childrenCache = pathChildrenCaches.get(service);
         if (childrenCache == null) {
-            String directory = String.format("/bauble/provider/%s/%s/%s",
-                    service.getGroup(),
-                    service.getServiceName(),
-                    service.getVersion());
+            String directory = String.format("/bauble/provider/%s",service.getDirectory());
             PathChildrenCache newChildrenCache = new PathChildrenCache(configClient,directory,false);
             childrenCache = pathChildrenCaches.putIfAbsent(service,newChildrenCache);
 
@@ -100,26 +92,26 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
 
                         switch (event.getType()) {
                             case CHILD_ADDED: {
-                                URL URL = top.yunzhitan.registry.URL.parseURL(event.getData().getPath());
-                                SocketAddress address = URL.getAddress();
-                                Service service = URL.getService();
+                                RegistryConfig registryConfig = RegistryConfig.parseRegistryConfig(event.getData().getPath());
+                                SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
+                                Service service = registryConfig.getService();
                                 ConcurrentSet<Service> services = serviceMetaMap.get(address);
                                 ZookeeperRegistryService.super.notify(
                                         service,
                                         NotifyEvent.CHILD_ADDED,
-                                        URL
+                                        registryConfig
                                 );
                                 break;
                             }
                             case CHILD_REMOVED: {
-                                URL URL = top.yunzhitan.registry.URL.parseURL(event.getData().getPath());
-                                SocketAddress address = URL.getAddress();
-                                Service service = URL.getService();
+                                RegistryConfig registryConfig = RegistryConfig.parseRegistryConfig(event.getData().getPath());
+                                SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
+                                Service service = registryConfig.getService();
                                 ConcurrentSet<Service> metaSets = serviceMetaMap.get(address);
                                 metaSets.remove(service);
                                 ZookeeperRegistryService.super.notify(service,
                                         NotifyEvent.CHILD_REMOVED,
-                                        URL);
+                                        registryConfig);
                             }
                         }
                     }
@@ -129,11 +121,8 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
     }
 
     @Override
-    public void doUnregister(URL URL) {
-        String directory = String.format("bauble/provider/%s%s%s",
-                URL.getGroup(),
-                URL.getService(),
-                URL.getVersion());
+    public void doUnregister(RegistryConfig registryConfig) {
+        String directory = String.format("bauble/provider/%s", registryConfig.getDirectory());
 
         try {
             if(configClient.checkExists().forPath(directory) == null) {
@@ -141,7 +130,7 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
             }
         } catch (Exception e) {
             if (logger.isWarnEnabled()) {
-                logger.warn("Check exists with parent path failed {}-{}", URL,e);
+                logger.warn("Check exists newFuture parent path failed {}-{}", registryConfig,e);
             }
         }
 
@@ -150,18 +139,18 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
                 @Override
                 public void processResult(CuratorFramework curatorFramework, CuratorEvent curatorEvent) {
                     if(curatorEvent.getResultCode() == KeeperException.Code.OK.intValue()) {
-                        getURLSet().remove(URL);
+                        getRegistered().remove(registryConfig);
                     }
                 }
             }).forPath(
                     String.format("%s/%s:%s:%s",
                     directory,
-                    URL.getHost(),
-                    String.valueOf(URL.getPort()),
-                    String.valueOf(URL.getWeight())));
+                    registryConfig.getHost(),
+                    String.valueOf(registryConfig.getPort()),
+                    String.valueOf(registryConfig.getWeight())));
         } catch (Exception e) {
             if(logger.isWarnEnabled()) {
-                logger.warn("Delete register meta: {} failed {}", URL,e);
+                logger.warn("Delete register meta: {} failed {}", registryConfig,e);
             }
         }
     }
@@ -177,23 +166,6 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
         configClient.close();
     }
 
-    public List<Service> findServiceMetaByAddress(SocketAddress address) {
-        return Lists.transform(
-                Lists.newArrayList(getServiceMeta(address)),
-                new Function<Service,Service>() {
-
-                    @Override
-                    public Service apply(Service input) {
-                        Service copy = new Service();
-                        copy.setGroup(input.getGroup());
-                        copy.setServiceName(input.getServiceName());
-                        copy.setVersion(input.getVersion());
-                        return copy;
-                    }
-                });
-    }
-
-
     @Override
     public void connectRegistryServer(String registryConfig) {
         configClient = CuratorFrameworkFactory.newClient(registryConfig,sessionTimeoutMs,connectionTimeoutMs,
@@ -207,10 +179,10 @@ public class ZookeeperRegistryService extends AbstructRegistryService {
                 if(connectionState == ConnectionState.RECONNECTED) {
                     logger.info("Zookeeper connection has been re-established");
                 }
-                for(URL meta: getURLSet()) {
+                for(RegistryConfig meta: getRegistered()) {
                     doRegister(meta);
                 }
-                for(Service meta: getSubcribeSet()) {
+                for(Service meta: getSubscribeSet()) {
                     doSubscribe(meta);
                 }
             }

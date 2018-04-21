@@ -56,6 +56,11 @@ public class DefaultConnectionManager implements ConnectionManager {
     }
 
     @Override
+    public Collection<RegistryConfig> lookup(Service Service) {
+        return null;
+    }
+
+    @Override
     public boolean waitForAvailable(long timeoutMillis,Directory directory) {
         if (client.isDirectoryAvailable(directory)) {
             return true;
@@ -124,9 +129,11 @@ public class DefaultConnectionManager implements ConnectionManager {
     public ConnectionManager initialization(Service service) {
         subscribe(service, new NotifyListener() {
             @Override
-            public void notify(URL meta, NotifyEvent event) {
-                SocketAddress address = new InetSocketAddress(meta.getHost(),meta.getPort());
+            public void notify(RegistryConfig registryConfig, NotifyEvent event) {
+                SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
+                int weight = registryConfig.getWeight();
                 RemotePeer remotePeer = client.getRemotePeer(address);
+                remotePeer.setWeight(weight);
                 if(event == NotifyEvent.CHILD_ADDED) {
                     if(remotePeer.isAvailable()) {
                         onSucceed(remotePeer,service,signalNeeded.getAndSet(false));
@@ -151,6 +158,7 @@ public class DefaultConnectionManager implements ConnectionManager {
                 }
             }
         });
+        return this;
     }
 
     @Override

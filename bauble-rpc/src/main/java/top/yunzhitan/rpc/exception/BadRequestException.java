@@ -21,10 +21,6 @@ package top.yunzhitan.rpc.exception;
  *
  * For efficiency this exception will not have a stack trace.
  *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
  */
 public class BadRequestException extends RemoteException {
 

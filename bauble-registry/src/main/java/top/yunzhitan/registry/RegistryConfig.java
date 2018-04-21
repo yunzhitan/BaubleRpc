@@ -4,25 +4,21 @@ package top.yunzhitan.registry;
 import top.yunzhitan.Util.Strings;
 import top.yunzhitan.rpc.model.Service;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.util.Objects;
 
 
-public class URL {
+public class RegistryConfig {
 
-    // 地址
-    private InetSocketAddress address;
-    // metadata
+    // 注册的服务名称
     private Service service = new Service();
     private String host;
     private int port;
-    // 权重 hashCode() 与 equals() 不把weight计算在内
+    // 服务提供者的权重
     private volatile int weight;
 
-    public URL(String host, int port) {
+    public RegistryConfig(String host, int port) {
         this.host = host;
         this.port = port;
-        address = new InetSocketAddress(host,port);
     }
 
     public String getHost() {
@@ -59,9 +55,6 @@ public class URL {
         service.setVersion(version);
     }
 
-    public SocketAddress getAddress() {
-        return address;
-    }
 
     public Service getService() {
         return service;
@@ -86,43 +79,44 @@ public class URL {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        URL that = (URL) o;
-
-        return !(address != null ? !address.equals(that.address) : that.address != null)
-                && !(service != null ? !service.equals(that.service) : that.service != null);
+        if (!(o instanceof RegistryConfig)) return false;
+        RegistryConfig registryConfig = (RegistryConfig) o;
+        return getPort() == registryConfig.getPort() &&
+                Objects.equals(getService(), registryConfig.getService()) &&
+                Objects.equals(getHost(), registryConfig.getHost());
     }
 
     @Override
     public int hashCode() {
-        int result = address != null ? address.hashCode() : 0;
-        result = 31 * result + (service != null ? service.hashCode() : 0);
-        return result;
+
+        return Objects.hash(getService(), getHost(), getPort());
     }
 
     @Override
     public String toString() {
-        return "URL{" +
-                "address=" + address +
+        return "RegistryConfig{" +
                 ", service=" + service +
                 ", weight=" + weight +
                 '}';
     }
 
-    public static URL parseURL(String data) {
+    public static RegistryConfig parseRegistryConfig(String data) {
         //directory
         String[] array_1 = Strings.split(data,'/');
         String[] array_2 = Strings.split(array_1[5],':');
         String host = array_2[0];
         int port = Integer.parseInt(array_2[1]);
-        URL meta = new URL(host,port);
-        meta.setGroup(array_1[2]);
-        meta.setServiceName(array_1[3]);
-        meta.setVersion(array_1[4]);
-        meta.setWeight(Integer.parseInt(array_2[2]));
+        RegistryConfig registryConfig = new RegistryConfig(host,port);
+        registryConfig.setGroup(array_1[2]);
+        registryConfig.setServiceName(array_1[3]);
+        registryConfig.setVersion(array_1[4]);
+        registryConfig.setWeight(Integer.parseInt(array_2[2]));
 
-        return meta;
+        return registryConfig;
+    }
+
+    public String getDirectory() {
+        return String.format("%s/%s/%s",getGroup(),getServiceName(),getVersion());
     }
 }
 

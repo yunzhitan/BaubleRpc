@@ -16,16 +16,7 @@
 
 package top.yunzhitan.rpc.exception;
 
-/**
- * Traffic restrictions by server.
- *
- * For efficiency this exception will not have a stack trace.
- *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
- */
+
 public class FlowControlException extends RemoteException {
 
     private static final long serialVersionUID = 3478741195763320940L;

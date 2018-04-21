@@ -35,13 +35,13 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         int count = channelCounter.getAndIncrement();
-        logger.info("Connects with {} as the {}th channel",ctx.channel(),count);
+        logger.info("Connects newFuture {} as the {}th channel",ctx.channel(),count);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         int count = channelCounter.getAndDecrement();
-        logger.info("Connects with {}, the{} channel has broken down",ctx.channel(),count);
+        logger.info("Connects newFuture {}, the{} channel has broken down",ctx.channel(),count);
     }
 
     @Override

@@ -3,7 +3,7 @@ package top.yunzhitan.rpc.future;
 
 import top.yunzhitan.rpc.Listener;
 
-public abstract class AbstructListenableFuture<V> extends AbstractFuture<V> implements ListenableFuture<V> {
+public abstract class AbstractListenableFuture<V> extends AbstractFuture<V> implements ListenableFuture<V> {
 
     private Object listeners;
 

@@ -1,11 +1,12 @@
 package top.yunzhitan.rpc.consumer.proxy;
 
 import com.google.common.collect.Lists;
-import top.yunzhitan.Util.SocketAddress;
-import top.yunzhitan.protocol.RpcProtocal;
-import top.yunzhitan.rpc.ConnectionManager;
-import top.yunzhitan.rpc.DispatchType;
+import top.yunzhitan.Util.Strings;
+import top.yunzhitan.rpc.ServiceProvider;
 import top.yunzhitan.rpc.cluster.ClusterType;
+import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceFactory;
+import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceType;
+import top.yunzhitan.rpc.consumer.transporter.DefaultTransporter;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
 import top.yunzhitan.rpc.invoker.AsyncInvoker;
 import top.yunzhitan.rpc.invoker.InvokerType;
@@ -13,12 +14,19 @@ import top.yunzhitan.rpc.invoker.SyncInvoker;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
 import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.serialization.SerializerFactory;
+import top.yunzhitan.serialization.SerializerType;
+import top.yunzhitan.transport.Client;
 import top.yunzhitan.transport.Directory;
+import top.yunzhitan.transport.RemotePeer;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ProxyFactory<T> {
 
@@ -28,21 +36,23 @@ public class ProxyFactory<T> {
     private String group;
 
     //服务名称
-    private String providerName;
+    private String serviceName;
 
     //服务版本
     private String version;
 
     //序列化方式
-    private RpcProtocal serialType;
+    private SerializerType serializerType;
+
+    //负载均衡方式
+    private LoadBalanceType loadBalanceType;
 
     //provider地址
-    private List<SocketAddress> addresses;
+    private List<RemotePeer> remotePeers;
 
-    private ConnectionManager connectionManager;
+    private Client client;
 
     private InvokerType invokeType = InvokerType.getDefault();
-    private DispatchType dispatchType;
 
     // 调用超时时间设置
     private long timeoutMills;
@@ -55,7 +65,7 @@ public class ProxyFactory<T> {
     public static <T> ProxyFactory<T> factory(Class<T> interfaceClass) {
         ProxyFactory<T> factory = new ProxyFactory<>(interfaceClass);
 
-        factory.addresses = Lists.newArrayList();
+        factory.remotePeers = Lists.newArrayList();
         factory.methodSpecialConfigs = Lists.newArrayList();
 
         return factory;
@@ -75,7 +85,7 @@ public class ProxyFactory<T> {
     }
 
     public ProxyFactory<T> providerName(String providerName) {
-        this.providerName = providerName;
+        this.serviceName = providerName;
         return this;
     }
 
@@ -90,34 +100,29 @@ public class ProxyFactory<T> {
                 .version(directory.getVersion());
     }
 
-    public ProxyFactory<T> client(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
+    public ProxyFactory<T> client(Client client) {
+        this.client = client;
         return this;
     }
 
-    public ProxyFactory<T> serializerType(Serial serializerType) {
-        this.serialType = serializerType;
+    public ProxyFactory<T> serializerType(SerializerType serializerType) {
+        this.serializerType = serializerType;
         return this;
     }
 
 
-    public ProxyFactory<T> addProviderAddress(SocketAddress... addresses) {
-        Collections.addAll(this.addresses, addresses);
+    public ProxyFactory<T> addProviderAddress(RemotePeer... remotePeers) {
+        Collections.addAll(this.remotePeers, remotePeers);
         return this;
     }
 
-    public ProxyFactory<T> addProviderAddress(List<SocketAddress> addresses) {
-        this.addresses.addAll(addresses);
+    public ProxyFactory<T> addProviderAddress(List<RemotePeer> addresses) {
+        this.remotePeers.addAll(addresses);
         return this;
     }
 
     public ProxyFactory<T> invokeType(InvokerType invokeType) {
         this.invokeType = invokeType;
-        return this;
-    }
-
-    public ProxyFactory<T> dispatchType(DispatchType dispatchType) {
-        this.dispatchType = dispatchType;
         return this;
     }
 
@@ -128,11 +133,6 @@ public class ProxyFactory<T> {
 
     public ProxyFactory<T> addMethodSpecialConfig(MethodSpecialConfig... methodSpecialConfigs) {
         Collections.addAll(this.methodSpecialConfigs, methodSpecialConfigs);
-        return this;
-    }
-
-    public ProxyFactory<T> addHook(ConsumerHook... hooks) {
-        Collections.addAll(this.hooks, hooks);
         return this;
     }
 
@@ -149,53 +149,46 @@ public class ProxyFactory<T> {
     public T newProxyInstance() {
         // check arguments
 
-        top.yunzhitan.rpc.service.Service annotation = interfaceClass.getAnnotation(top.yunzhitan.rpc.service.Service.class);
+        ServiceProvider annotation = interfaceClass.getAnnotation(ServiceProvider.class);
 
         if (annotation != null) {
             group = annotation.group();
-            String name = annotation.name();
-            providerName =  name;
-        }
-
-        if (dispatchType == DispatchType.BROADCAST && invokeType == InvokerType.SYNC) {
-            throw reject("broadcast & sync unsupported");
+            serviceName =  annotation.name();
         }
 
         // metadata
-        Service metadata = new Service(
-                group,
-                providerName,
-                version
-        );
+        Service service = new Service(group, serviceName, version);
 
-        JConnector<JConnection> connector = connectionManager.connector();
-        for (SocketAddress address : addresses) {
-            connector.addChannelGroup(metadata, connector.group(address));
-        }
+        checkArgument(Strings.isNotBlank(group), "group");
+        checkArgument(Strings.isNotBlank(serviceName), "serviceName");
+        checkNotNull(client, "client");
+        checkNotNull(serializerType, "serializerType");
+
 
         // transporter
-        Transporter transporter = dispatcher()
-                .hooks(hooks)
-                .timeoutMillis(timeoutMillis)
-                .methodSpecialConfigs(methodSpecialConfigs);
+        Transporter transporter = getTransporter(serializerType,client,loadBalanceType)
+                .timeoutMillis(timeoutMills);
 
         ClusterTypeConfig strategyConfig = ClusterTypeConfig.of(clusterType, retries);
         Object handler;
         switch (invokeType) {
             case SYNC:
-                handler = new SyncInvoker(connectionManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new SyncInvoker(client.getAppName(), service, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             case ASYNC:
-                handler = new AsyncInvoker(connectionManager.getAppname(), metadata, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new AsyncInvoker(client.getAppName(), service, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             default:
-                throw new Throwable("invokeType: " + invokeType);
+                handler = new AsyncInvoker(client.getAppName(), service, transporter, strategyConfig, methodSpecialConfigs);
         }
 
-        Object object = Proxy.newProxyInstance(
-                interfaceClass.getClassLoader(), new Class<?>[] { interfaceClass }, (InvocationHandler) handler);
-        return interfaceClass.cast(object);
+        return Proxies.getDefault().newProxy(interfaceClass, handler);
 
+    }
+
+    private Transporter getTransporter(SerializerType serializerType,Client client,LoadBalanceType loadBalanceType) {
+        return new DefaultTransporter(SerializerFactory.getSerializer(serializerType.value())
+        ,client, LoadBalanceFactory.loadBalancer(loadBalanceType));
     }
 
 

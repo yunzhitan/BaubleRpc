@@ -8,17 +8,18 @@ import top.yunzhitan.rpc.filter.*;
 import top.yunzhitan.rpc.model.*;
 import top.yunzhitan.rpc.tracing.TraceId;
 import top.yunzhitan.rpc.tracing.TracingUtil;
+import top.yunzhitan.transport.RequestMessage;
 
 import java.util.List;
 
-public abstract class AbstructInvoker {
+public abstract class AbstractInvoker {
 
 
     private final String appName;            //应用名称
     private final Service service;   //服务元数据
     private final ClusterUtil clusterUtil;
 
-    public AbstructInvoker(String appName,
+    public AbstractInvoker(String appName,
                            Service metadata,
                            Transporter transporter,
                            ClusterTypeConfig defaultStrategy,
@@ -33,9 +34,10 @@ public abstract class AbstructInvoker {
 
     private RpcRequest createRequest(String methodName, Object[] args) {
         RpcRequest request = new RpcRequest();
-        RequestWrapper wrapper = new RequestWrapper(appName,methodName,args);
-        setTraceId(wrapper);
-        request.setRequestWrapper(wrapper);
+        request.setAppName(appName);
+        request.setMethodName(methodName);
+        request.setArguments(args);
+        request.setService(service);
 
         return request;
     }

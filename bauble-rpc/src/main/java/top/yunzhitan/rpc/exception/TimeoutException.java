@@ -23,10 +23,6 @@ import java.net.SocketAddress;
 /**
  * Call timeout, usually thrown by client.
  *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
  */
 public class TimeoutException extends RemoteException {
 

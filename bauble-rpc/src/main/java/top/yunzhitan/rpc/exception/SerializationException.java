@@ -18,14 +18,7 @@ package top.yunzhitan.rpc.exception;
 
 import java.net.SocketAddress;
 
-/**
- * 序列化/反序列化异常
- *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
- */
+
 public class SerializationException extends RemoteException {
 
     private static final long serialVersionUID = -5079093080483380586L;

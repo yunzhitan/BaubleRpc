@@ -2,7 +2,7 @@ package top.yunzhitan.rpc;
 
 import top.yunzhitan.Util.BaubleServiceLoader;
 import top.yunzhitan.common.Constants;
-import top.yunzhitan.registry.URL;
+import top.yunzhitan.registry.RegistryConfig;
 import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.registry.RegistryType;
 import top.yunzhitan.rpc.model.Service;
@@ -83,7 +83,7 @@ public class DefaultProviderManager implements ProviderManager {
     public void publish(ServiceProvider serviceWrapper) {
         Service metadata = serviceWrapper.getMetadata();
 
-        URL meta = new URL(socketAddress.getHostName(),socketAddress.getPort());
+        RegistryConfig meta = new RegistryConfig(socketAddress.getHostName(),socketAddress.getPort());
         meta.setGroup(metadata.getGroup());
         meta.setServiceName(metadata.getServiceName());
         meta.setVersion(metadata.getVersion());
@@ -135,7 +135,7 @@ public class DefaultProviderManager implements ProviderManager {
     public void unpublish(ServiceProvider serviceWrapper) {
         Service metadata = serviceWrapper.getMetadata();
 
-        URL meta = new URL(socketAddress.getHostName(),socketAddress.getPort());
+        RegistryConfig meta = new RegistryConfig(socketAddress.getHostName(),socketAddress.getPort());
         meta.setGroup(metadata.getGroup());
         meta.setServiceName(metadata.getServiceName());
         meta.setVersion(metadata.getVersion());

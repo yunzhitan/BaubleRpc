@@ -20,11 +20,6 @@ package top.yunzhitan.rpc.exception;
  * The corresponding service was not be found.
  *
  * For efficiency this exception will not have a stack trace.
- *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
  */
 public class ServiceNotFoundException extends RemoteException {
 

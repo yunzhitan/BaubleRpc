@@ -18,14 +18,7 @@ package top.yunzhitan.rpc.exception;
 
 import java.net.SocketAddress;
 
-/**
- * Remote call abnormalities.
- *
- * jupiter
- * org.jupiter.rpc.exception
- *
- * @author jiachun.fjc
- */
+
 public class RemoteException extends RuntimeException {
 
     private static final long serialVersionUID = -6516335527982400712L;

@@ -60,6 +60,10 @@ public class Service extends Directory implements Serializable {
         this.version = version;
     }
 
+    public String getDirectory() {
+        return String.format("%s/%s/%s",group,serviceName,version);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

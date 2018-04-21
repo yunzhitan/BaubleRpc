@@ -1,24 +1,22 @@
 package top.yunzhitan.transport;
 
-import top.yunzhitan.transport.BytesHolder;
-
 public class ResponseMessage{
 
-    private long responseId;
+    private long invokeId;
     private Status status;
-    protected byte serializerCode;
-    protected byte[] bytes;
+    private byte serializerCode;
+    private byte[] bytes;
 
     public ResponseMessage() {
     }
 
-    public ResponseMessage(long responseId, Status status) {
-        this.responseId = responseId;
+    public ResponseMessage(long invokeId, Status status) {
+        this.invokeId = invokeId;
         this.status = status;
     }
 
-    public ResponseMessage(long responseId) {
-        this.responseId = responseId;
+    public ResponseMessage(long invokeId) {
+        this.invokeId = invokeId;
     }
 
     public Status getStatus() {
@@ -33,12 +31,12 @@ public class ResponseMessage{
         this.status = status;
     }
 
-    public long getResponseId() {
-        return responseId;
+    public long getInvokeId() {
+        return invokeId;
     }
 
-    public void setResponseId(long responseId) {
-        this.responseId = responseId;
+    public void setInvokeId(long invokeId) {
+        this.invokeId = invokeId;
     }
 
     public byte getSerializerCode() {

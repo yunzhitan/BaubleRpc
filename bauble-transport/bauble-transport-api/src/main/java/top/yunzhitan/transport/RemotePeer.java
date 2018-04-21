@@ -10,14 +10,21 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class RemotePeer {
 
-    private SocketAddress address;
+    /**
+     * 远程服务节点的地址
+     */
+    private SocketAddress remoteAddress;
+    /**
+     * 远程服务节点的权重
+     */
+    private int weight;
     private AtomicBoolean available = new AtomicBoolean(false);
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition notifyCondition = lock.newCondition();
     private volatile int signalNeeded = 0; // 0: false, 1: true
 
-    public RemotePeer(SocketAddress address) {
-        this.address = address;
+    public RemotePeer(SocketAddress remoteAddress) {
+        this.remoteAddress = remoteAddress;
     }
 
     public void setAvailable(boolean aval) {
@@ -26,6 +33,18 @@ public class RemotePeer {
 
     public boolean isAvailable() {
         return available.get();
+    }
+
+    public int getWeight() {
+        return weight;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public SocketAddress getRemoteAddress() {
+        return remoteAddress;
     }
 
     public boolean waitForAvailable(long timeoutMillis) {
@@ -54,4 +73,10 @@ public class RemotePeer {
         return available;
     }
 
+    @Override
+    public String toString() {
+        return "RemotePeer{" +
+                "remoteAddress=" + remoteAddress +
+                '}';
+    }
 }

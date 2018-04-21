@@ -15,7 +15,7 @@ public class InvokeFutureContext {
         return future;
     }
 
-    public static void set(InvokeFuture<?> future) {
+    public static void setFuture(InvokeFuture<?> future) {
         futureThreadLocal.set(future);
     }
 }

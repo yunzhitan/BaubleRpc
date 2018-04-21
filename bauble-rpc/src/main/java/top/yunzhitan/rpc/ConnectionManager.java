@@ -1,7 +1,7 @@
 package top.yunzhitan.rpc;
 
 import top.yunzhitan.registry.NotifyListener;
-import top.yunzhitan.registry.URL;
+import top.yunzhitan.registry.RegistryConfig;
 import top.yunzhitan.registry.Registry;
 import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.rpc.model.Service;
@@ -23,14 +23,7 @@ public interface ConnectionManager extends Registry{
     /**
      * 从本地容器查找服务信息.
      */
-    Collection<URL> lookup(Service Service);
-
-    /**
-     * 等待直到连接可用
-     * @param timeoutMillis
-     * @return
-     */
-    boolean waitForAvailable(long timeoutMillis);
+    Collection<RegistryConfig> lookup(Service Service);
 
     /**
      * 从注册中心订阅一个服务.

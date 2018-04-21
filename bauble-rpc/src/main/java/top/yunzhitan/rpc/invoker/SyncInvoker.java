@@ -8,7 +8,7 @@ import top.yunzhitan.rpc.model.MethodSpecialConfig;
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class SyncInvoker extends AbstructInvoker {
+public class SyncInvoker extends AbstractInvoker {
     public SyncInvoker(String appName, Service metadata, Transporter transporter, ClusterTypeConfig defaultStrategy, List<MethodSpecialConfig> methodSpecialConfigs) {
         super(appName, metadata, transporter, defaultStrategy, methodSpecialConfigs);
     }

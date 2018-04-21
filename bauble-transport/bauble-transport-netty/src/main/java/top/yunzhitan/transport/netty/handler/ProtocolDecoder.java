@@ -6,7 +6,6 @@ import top.yunzhitan.transport.ResponseMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
-import top.yunzhitan.transport.Status;
 
 import java.util.List;
 
@@ -83,7 +82,7 @@ public class ProtocolDecoder extends ReplayingDecoder<ProtocolDecoder.State> {
                 byte[] bytes = new byte[length];
                 byteBuf.readBytes(bytes);
                 ResponseMessage responseMessage = new ResponseMessage();
-                responseMessage.setResponseId(header.id());
+                responseMessage.setInvokeId(header.id());
                 responseMessage.setStatus(header.status());
                 responseMessage.setBytes(bytes);
                 out.add(responseMessage);

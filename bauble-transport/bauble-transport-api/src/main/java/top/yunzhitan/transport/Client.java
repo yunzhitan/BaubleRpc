@@ -3,12 +3,16 @@ package top.yunzhitan.transport;
 import top.yunzhitan.transport.processor.ClientProcessor;
 
 import java.net.SocketAddress;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-public interface Client<C> {
+public interface Client {
     /**
      * Returns the rpc processor.
      */
     ClientProcessor getProcessor();
+
+    String getAppName();
 
     /**
      * Binds the rpc processor.
@@ -18,7 +22,7 @@ public interface Client<C> {
     /**
      * Connects to the remote peer.
      */
-    C writeMessage(SocketAddress address, RequestMessage message, FutureListener listener);
+    void writeMessage(SocketAddress address, RequestMessage message, FutureListener listener);
 
     /**
      * try to writeMessage to the remote peer.
@@ -27,7 +31,7 @@ public interface Client<C> {
      */
     void tryConnect(SocketAddress address,FutureListener listener);
 
-    C writeMessage(SocketAddress address, RequestMessage message, boolean async, FutureListener listener);
+    void writeMessage(SocketAddress address, RequestMessage message, boolean async, FutureListener listener);
 
 
     /**
@@ -42,5 +46,7 @@ public interface Client<C> {
     RemotePeer getRemotePeer(SocketAddress address);
 
     boolean isDirectoryAvailable(Directory directory);
+
+    CopyOnWriteArrayList<RemotePeer> getRemotePeerList(Directory service);
 
 }

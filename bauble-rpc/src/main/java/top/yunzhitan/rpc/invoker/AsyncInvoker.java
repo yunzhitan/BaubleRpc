@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * 异步调用
  */
-public class AsyncInvoker extends AbstructInvoker {
+public class AsyncInvoker extends AbstractInvoker {
     public AsyncInvoker(String appName,
                         Service metadata,
                         Transporter transporter,
@@ -26,7 +26,7 @@ public class AsyncInvoker extends AbstructInvoker {
 
         Object result = doInvoke(method.getName(), args, returnType, false);
 
-        InvokeFutureContext.set((InvokeFuture<?>) result);
+        InvokeFutureContext.setFuture((InvokeFuture<?>) result);
     }
 
 }
