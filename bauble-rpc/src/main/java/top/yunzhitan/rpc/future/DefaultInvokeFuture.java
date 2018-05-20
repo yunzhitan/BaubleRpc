@@ -1,13 +1,10 @@
 package top.yunzhitan.rpc.future;
 
-import com.google.common.collect.Maps;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.Signal;
 import top.yunzhitan.common.Constants;
 import top.yunzhitan.rpc.ConsumerHook;
-import top.yunzhitan.rpc.DispatchType;
 import top.yunzhitan.rpc.Listener;
 import top.yunzhitan.rpc.exception.BizException;
 import top.yunzhitan.rpc.exception.RemoteException;
@@ -18,9 +15,6 @@ import top.yunzhitan.transport.RemotePeer;
 import top.yunzhitan.transport.Status;
 
 import java.net.SocketAddress;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class DefaultInvokeFuture<V> extends AbstractListenableFuture<V> implements InvokeFuture<V> {
@@ -28,8 +22,6 @@ public class DefaultInvokeFuture<V> extends AbstractListenableFuture<V> implemen
     private static final Logger logger = LoggerFactory.getLogger(DefaultInvokeFuture.class);
 
     private static final long DEFAULT_TIMEOUT_NANOSECONDS = TimeUnit.MILLISECONDS.toNanos(Constants.DEFAULT_TIMEOUT);
-
-    private static final ConcurrentMap<Long, DefaultInvokeFuture<?>> roundFutures = Maps.newConcurrentMap();
 
     private final long invokeId; // request.invokeId, 广播的场景可以重复
     private final Class<V> returnType;
@@ -41,14 +33,7 @@ public class DefaultInvokeFuture<V> extends AbstractListenableFuture<V> implemen
 
     private ConsumerHook[] hooks = ConsumerHook.EMPTY_HOOKS;
 
-
-    public static <T> DefaultInvokeFuture<T> newFuture(
-            long invokeId, Class<T> returnType,RemotePeer remotePeer,
-            long timeoutMillis) {
-        return new DefaultInvokeFuture<>(invokeId, returnType, remotePeer,timeoutMillis);
-    }
-
-    private DefaultInvokeFuture(
+    public DefaultInvokeFuture(
             long invokeId, Class<V> returnType,RemotePeer remotePeer,
             long timeoutMillis) {
 
@@ -56,9 +41,6 @@ public class DefaultInvokeFuture<V> extends AbstractListenableFuture<V> implemen
         this.remotePeer =remotePeer;
         this.returnType = returnType;
         this.timeout = timeoutMillis > 0 ? TimeUnit.MILLISECONDS.toNanos(timeoutMillis) : DEFAULT_TIMEOUT_NANOSECONDS;
-
-        roundFutures.put(invokeId, this);
-
     }
 
     @Override
@@ -110,7 +92,7 @@ public class DefaultInvokeFuture<V> extends AbstractListenableFuture<V> implemen
     }
 
     @SuppressWarnings("all")
-    private void doReceivedResponse(RpcResponse response) {
+    public void doReceivedResponse(RpcResponse response) {
         Status status = response.getStatus();
 
         if (status == Status.OK) {
@@ -127,79 +109,56 @@ public class DefaultInvokeFuture<V> extends AbstractListenableFuture<V> implemen
 
     private void setException(Status status, RpcResponse response) {
         Throwable cause;
-        if (status == Status.SERVER_TIMEOUT) {
-            cause = new TimeoutException(remotePeer.getRemoteAddress(), Status.SERVER_TIMEOUT);
-        } else if (status == Status.CLIENT_TIMEOUT) {
-            cause = new TimeoutException(remotePeer.getRemoteAddress(), Status.CLIENT_TIMEOUT);
-        } else if (status == Status.DESERIALIZATION_FAIL) {
-            cause = (SerializationException) response.getResult();
-        } else if (status == Status.SERVICE_EXPECTED_ERROR) {
-            cause = (Throwable) response.getResult();
-        } else if (status == Status.SERVICE_UNEXPECTED_ERROR) {
-            String message = String.valueOf(response.getResult());
-            cause = new BizException(message, remotePeer.getRemoteAddress());
-        } else {
-            Object result = response.getResult();
-            if (result != null && result instanceof RemoteException) {
-                cause = (RemoteException) result;
-            } else {
-                cause = new RemoteException(response.toString(), remotePeer.getRemoteAddress());
-            }
+        switch (status) {
+            case SERVER_TIMEOUT:
+                cause = new TimeoutException(remotePeer.getRemoteAddress(), Status.SERVER_TIMEOUT);
+                break;
+            case CLIENT_TIMEOUT:
+                cause = new TimeoutException(remotePeer.getRemoteAddress(), Status.CLIENT_TIMEOUT);
+                break;
+            case DESERIALIZATION_FAIL:
+                cause = (SerializationException) response.getResult();
+                break;
+            case SERVICE_EXPECTED_ERROR:
+                cause = (Throwable) response.getResult();
+                break;
+            case SERVICE_UNEXPECTED_ERROR:
+                String message = String.valueOf(response.getResult());
+                cause = new BizException(message, remotePeer.getRemoteAddress());
+                break;
+            default:
+                Object result = response.getResult();
+                if (result != null && result instanceof RemoteException) {
+                    cause = (RemoteException) result;
+                } else {
+                    cause = new RemoteException(response.toString(), remotePeer.getRemoteAddress());
+                }
+                break;
         }
         setException(cause);
     }
 
-    public static void receiveResponse(RemotePeer remotePeer, RpcResponse response) {
-        long invokeId = response.getInvokeId();
-        DefaultInvokeFuture<?> future = roundFutures.remove(invokeId);
-        if (future == null) {
-            logger.warn("A timeout response [{}] finally returned on {}.", response, remotePeer);
-            return;
-        }
-
-        future.doReceivedResponse(response);
+    public long getInvokeId() {
+        return invokeId;
     }
 
-    // timeout scanner
-    @SuppressWarnings("all")
-    private static class TimeoutScanner implements Runnable {
-
-        public void run() {
-            for (;;) {
-                try {
-                    // round
-                    for (DefaultInvokeFuture<?> future : roundFutures.values()) {
-                        process(future);
-                    }
-
-                } catch (Throwable t) {
-                    logger.error("An exception was caught while scanning the timeout futures {}.", t);
-                }
-
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException ignored) {}
-            }
-        }
-
-        private void process(DefaultInvokeFuture<?> future) {
-            if (future == null || future.isDone()) {
-                return;
-            }
-
-            if (System.nanoTime() - future.startTime > future.timeout) {
-                RpcResponse response = new RpcResponse(future.invokeId);
-                response.setStatus(future.sent ? Status.SERVER_TIMEOUT : Status.CLIENT_TIMEOUT);
-
-                DefaultInvokeFuture.receiveResponse(future.remotePeer, response);
-            }
-        }
+    public long getTimeout() {
+        return timeout;
     }
 
-    static {
-        Thread t = new Thread(new TimeoutScanner(), "timeout.scanner");
-        t.setDaemon(true);
-        t.start();
+    public long getStartTime() {
+        return startTime;
     }
 
+    public RemotePeer getRemotePeer() {
+        return remotePeer;
+    }
+
+    public boolean isSent() {
+        return sent;
+    }
+
+    public ConsumerHook[] getHooks() {
+        return hooks;
+    }
 }

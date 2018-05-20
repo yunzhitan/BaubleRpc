@@ -4,8 +4,8 @@ import top.yunzhitan.registry.NotifyListener;
 import top.yunzhitan.registry.RegistryConfig;
 import top.yunzhitan.registry.Registry;
 import top.yunzhitan.registry.RegistryService;
-import top.yunzhitan.rpc.model.Service;
-import top.yunzhitan.transport.Directory;
+import top.yunzhitan.common.Service;
+
 import java.net.SocketAddress;
 import java.util.Collection;
 
@@ -30,9 +30,7 @@ public interface ConnectionManager extends Registry{
      */
     void subscribe(Service Service, NotifyListener listener);
 
-    ConnectionManager initialization(Class<?> interfaceClass,String version);
-
-    ConnectionManager initialization(Service service);
+    void initialization(Service service);
 
     /**
      * 服务下线通知.
@@ -42,6 +40,8 @@ public interface ConnectionManager extends Registry{
 
     void shutdownGracefully();
 
-    boolean waitForAvailable(long timeoutMillis,Directory directory);
+    boolean waitForAvailable(long timeoutMillis,Service service);
+
+    void connectRegistryServer(String registryConfig);
 
 }

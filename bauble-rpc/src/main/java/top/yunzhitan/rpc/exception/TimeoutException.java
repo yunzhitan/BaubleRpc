@@ -20,10 +20,6 @@ import top.yunzhitan.transport.Status;
 
 import java.net.SocketAddress;
 
-/**
- * Call timeout, usually thrown by client.
- *
- */
 public class TimeoutException extends RemoteException {
 
     private static final long serialVersionUID = 8768621104391094458L;

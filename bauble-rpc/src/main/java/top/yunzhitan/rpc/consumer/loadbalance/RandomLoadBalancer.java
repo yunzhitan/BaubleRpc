@@ -2,8 +2,10 @@ package top.yunzhitan.rpc.consumer.loadbalance;
 
 import top.yunzhitan.transport.RemotePeer;
 
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 加权轮询 负载均衡算法
@@ -11,7 +13,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class RandomLoadBalancer implements LoadBalancer{
 
     private static final RandomLoadBalancer instance = new RandomLoadBalancer();
-    private final Random random = new Random();
+    private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     public static RandomLoadBalancer getInstance() {
         return instance;
@@ -21,14 +23,25 @@ public class RandomLoadBalancer implements LoadBalancer{
     }
 
     @Override
-    public RemotePeer select(CopyOnWriteArrayList<RemotePeer> remotePeers) {
-        int length = remotePeers.size();
+    public RemotePeer select(CopyOnWriteArrayList<RemotePeer> peerList) {
+        RemotePeer[] remotePeers = new RemotePeer[peerList.size()];
+        peerList.toArray(remotePeers);
+
+        int length = remotePeers.length;
+
+        if(length == 0) {
+            return null;
+        }
+        if(length == 1) {
+            return remotePeers[0];
+        }
+
         int totalWeight = 0;
         int weight = 0, lastWeight = 0;
         boolean allTheSameWeight = true;
         for(int i = 0; i < length; ++i) {
             lastWeight = weight;
-            weight = remotePeers.get(i).getWeight();
+            weight = remotePeers[i].getWeight();
             totalWeight += weight;
             if(allTheSameWeight && i > 0 && lastWeight != weight) {
                 allTheSameWeight = false;
@@ -37,7 +50,7 @@ public class RandomLoadBalancer implements LoadBalancer{
 
         if(totalWeight > 0 && !allTheSameWeight) {
             int offset = random.nextInt(totalWeight);
-            for(RemotePeer remotePeer : remotePeers) {
+            for(RemotePeer remotePeer : peerList) {
                 offset -= remotePeer.getWeight();
                 if (offset < 0) {
                     return remotePeer;
@@ -45,8 +58,8 @@ public class RandomLoadBalancer implements LoadBalancer{
             }
 
         }
-
-        return remotePeers.get(random.nextInt(length));
+        int index = random.nextInt(length);
+        return remotePeers[index];
     }
 
 }

@@ -26,18 +26,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-/**
- * Hessian的序列化/反序列化实现
- *
- * jupiter
- * org.jupiter.serialization.hessian
- *
- * @author jiachun.fjc
- */
 public class HessianSerializer extends Serializer {
 
     @Override
-    public byte code() {
+    public byte getCode() {
         return SerializerType.HESSIAN.value();
     }
 
@@ -88,6 +80,6 @@ public class HessianSerializer extends Serializer {
 
     @Override
     public String toString() {
-        return "hessian:(code=" + code() + ")";
+        return "hessian:(getCode=" + getCode() + ")";
     }
 }

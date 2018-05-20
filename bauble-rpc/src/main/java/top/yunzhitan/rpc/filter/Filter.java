@@ -6,7 +6,7 @@ public interface Filter {
 
     Type getType();
 
-    <T extends FilterContext> void doFilter(RpcRequest request, T filter) throws Throwable;
+    <T extends FilterContext> void doFilter(RpcRequest request, T filterCtx,FilterChain next) throws Throwable;
 
 
     enum Type {

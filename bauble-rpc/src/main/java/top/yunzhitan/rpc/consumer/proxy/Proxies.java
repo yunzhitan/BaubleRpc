@@ -40,7 +40,7 @@ public enum Proxies {
             } catch (Throwable t) {
                 ThrowUtil.throwException(t);
             }
-            return null; // never get here
+            return null;
         }
     });
 

@@ -18,7 +18,7 @@
         <module>bauble-rpc</module>
         <module>bauble-serialization</module>
         <module>bauble-config</module>
-        <module>bauble-transport</module>
+        <module>bauble-all</module>
     </modules>
 
     <properties>
@@ -28,7 +28,6 @@
         <hessian.version>4.0.38</hessian.version>
         <kryo.version>2.23.0</kryo.version>
         <protostuff.version>1.6.0</protostuff.version>
-        <asm.version>6.0</asm.version>
         <bytebuddy.version>1.7.9</bytebuddy.version>
         <disruptor.version>3.3.7</disruptor.version>
         <metrics.version>4.0.2</metrics.version>
@@ -39,7 +38,10 @@
         <curator.version>2.9.1</curator.version>
         <zookeeper.version>3.4.6</zookeeper.version>
         <opentracing.version>0.31.0</opentracing.version>
-        <spring.version>5.4.0.RELEASE</spring.version>
+        <spring.version>5.0.4.RELEASE</spring.version>
+        <guava.version>20.0</guava.version>
+        <opentracing.version>0.31.0</opentracing.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -87,11 +89,6 @@
 
 
         <!-- Spring -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
 
         <!-- Netty -->
         <dependency>
@@ -119,6 +116,18 @@
             <artifactId>netty-transport</artifactId>
             <version>${netty.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${bytebuddy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
 
         <!-- ZooKeeper -->
         <dependency>
@@ -164,6 +173,23 @@
             <artifactId>curator-recipes</artifactId>
             <version>${curator.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>${metrics.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
 
         <!-- Apache Commons Collections -->
@@ -173,7 +199,7 @@
             <version>4.0</version>
         </dependency>
 
-        <!-- Objenesis -->
+        <!-- objenesis -->
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
@@ -201,8 +227,53 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>23.0</version>
+            <version>${guava.version}</version>
         </dependency>
+
+        <!-- ### open tracing: begin -->
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <version>${opentracing.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-noop</artifactId>
+            <version>${opentracing.version}</version>
+        </dependency>
+        <!-- ### open tracing: end -->
+
+        <!-- ### benchmark: begin -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>${jmh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.openhft</groupId>
+            <artifactId>affinity</artifactId>
+            <version>${affinity.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+
 
     </dependencies>
     </dependencyManagement>
@@ -228,6 +299,14 @@
             <build>
                 <plugins>
                     <!-- Source -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgument>-XDignore.symbol.file</compilerArgument>
+                        </configuration>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -257,16 +336,6 @@
                     </plugin>
                 </plugins>
             </build>
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-                <repository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
         </profile>
     </profiles>
 

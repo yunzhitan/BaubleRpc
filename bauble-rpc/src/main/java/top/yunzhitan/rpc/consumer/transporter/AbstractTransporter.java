@@ -3,22 +3,17 @@ package top.yunzhitan.rpc.consumer.transporter;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.yunzhitan.rpc.ConsumerHook;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalancer;
 import top.yunzhitan.rpc.exception.RemoteException;
 import top.yunzhitan.rpc.future.DefaultInvokeFuture;
+import top.yunzhitan.rpc.future.FuturePool;
 import top.yunzhitan.rpc.future.InvokeFuture;
-import top.yunzhitan.rpc.model.MethodSpecialConfig;
 import top.yunzhitan.rpc.model.ResultWrapper;
 import top.yunzhitan.rpc.model.RpcResponse;
-import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.common.Service;
 import top.yunzhitan.serialization.Serializer;
 import top.yunzhitan.transport.*;
 
-import java.net.SocketAddress;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractTransporter implements Transporter {
@@ -29,7 +24,6 @@ public abstract class AbstractTransporter implements Transporter {
     private Serializer serializer;       //序列化方式
     private Client client;
     private LoadBalancer loadBalancer; //负载均衡方式
-    private long timeoutMillis;
 
     public AbstractTransporter(Serializer serializer, Client client,LoadBalancer loadBalancer) {
         this.serializer = serializer;
@@ -64,7 +58,7 @@ public abstract class AbstractTransporter implements Transporter {
                     response.setStatus(Status.CLIENT_ERROR);
                     response.setResult(wrapper);
 
-                    DefaultInvokeFuture.receiveResponse(remotePeer,response);
+                    FuturePool.receiveResponse(remotePeer,response);
                 }
             }
         });

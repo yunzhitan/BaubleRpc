@@ -2,7 +2,7 @@ package top.yunzhitan.rpc.consumer.proxy;
 
 import com.google.common.collect.Lists;
 import top.yunzhitan.Util.Strings;
-import top.yunzhitan.rpc.ServiceProvider;
+import top.yunzhitan.common.Service;
 import top.yunzhitan.rpc.cluster.ClusterType;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceFactory;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceType;
@@ -13,15 +13,11 @@ import top.yunzhitan.rpc.invoker.InvokerType;
 import top.yunzhitan.rpc.invoker.SyncInvoker;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
-import top.yunzhitan.rpc.model.Service;
 import top.yunzhitan.serialization.SerializerFactory;
 import top.yunzhitan.serialization.SerializerType;
 import top.yunzhitan.transport.Client;
-import top.yunzhitan.transport.Directory;
 import top.yunzhitan.transport.RemotePeer;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.List;
 
@@ -94,10 +90,10 @@ public class ProxyFactory<T> {
         return this;
     }
 
-    public ProxyFactory<T> directory(Directory directory) {
-        return group(directory.getGroup())
-                .providerName(directory.getServiceName())
-                .version(directory.getVersion());
+    public ProxyFactory<T> service(Service service) {
+        return group(service.getGroup())
+                .providerName(service.getServiceName())
+                .version(service.getVersion());
     }
 
     public ProxyFactory<T> client(Client client) {
@@ -107,6 +103,11 @@ public class ProxyFactory<T> {
 
     public ProxyFactory<T> serializerType(SerializerType serializerType) {
         this.serializerType = serializerType;
+        return this;
+    }
+
+    public ProxyFactory<T> loadBalanceType(LoadBalanceType loadBalanceType) {
+        this.loadBalanceType = loadBalanceType;
         return this;
     }
 
@@ -149,14 +150,13 @@ public class ProxyFactory<T> {
     public T newProxyInstance() {
         // check arguments
 
-        ServiceProvider annotation = interfaceClass.getAnnotation(ServiceProvider.class);
+        top.yunzhitan.rpc.Service annotation = interfaceClass.getAnnotation(top.yunzhitan.rpc.Service.class);
 
         if (annotation != null) {
             group = annotation.group();
             serviceName =  annotation.name();
         }
 
-        // metadata
         Service service = new Service(group, serviceName, version);
 
         checkArgument(Strings.isNotBlank(group), "group");

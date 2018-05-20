@@ -22,12 +22,6 @@ import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.regex.Pattern;
 
-/**
- * jupiter
- * org.jupiter.common.util
- *
- * @author jiachun.fjc
- */
 public class NetUtil {
 
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3}$");

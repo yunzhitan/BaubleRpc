@@ -11,9 +11,8 @@ public final class LoadBalanceFactory {
             return RoundRubinBalancer.getInstance();
         }
 
-        // 如果不指定, 默认的负载均衡算法是加权轮询
-        return RandomLoadBalancer.getInstance();
-    }
+        return RoundRubinBalancer.getInstance();
+        }
 
     private LoadBalanceFactory() {}
 }

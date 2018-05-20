@@ -3,15 +3,6 @@ package top.yunzhitan.rpc.cluster;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
 import top.yunzhitan.rpc.future.InvokeFuture;
 import top.yunzhitan.rpc.model.RpcRequest;
-/**
- * 快速失败, 只发起一次调用, 失败立即报错(jupiter缺省设置)
- *
- * 通常用于非幂等性的写操作.
- *
- * https://en.wikipedia.org/wiki/Fail-fast
- *
- *
- */
 
 public class FailFastClusterInvoker implements ClusterInvoker {
 

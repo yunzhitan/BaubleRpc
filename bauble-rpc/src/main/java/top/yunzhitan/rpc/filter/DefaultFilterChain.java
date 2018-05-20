@@ -24,6 +24,6 @@ public class DefaultFilterChain implements FilterChain {
 
     @Override
     public <T extends FilterContext> void doFilter(RpcRequest request, T filterCtx) throws Throwable {
-        filter.doFilter(request,filterCtx);
+        filter.doFilter(request,filterCtx,next);
     }
 }

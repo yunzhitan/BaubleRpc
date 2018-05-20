@@ -16,12 +16,6 @@
 
 package top.yunzhitan.rpc.exception;
 
-/**
- * Request content deserialize failure.
- *
- * For efficiency this exception will not have a stack trace.
- *
- */
 public class BadRequestException extends RemoteException {
 
     private static final long serialVersionUID = -6603241073638657127L;

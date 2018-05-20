@@ -3,12 +3,11 @@ package top.yunzhitan.rpc.invoker;
 import top.yunzhitan.rpc.cluster.ClusterInvoker;
 import top.yunzhitan.rpc.cluster.ClusterUtil;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
-import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.common.Service;
 import top.yunzhitan.rpc.filter.*;
 import top.yunzhitan.rpc.model.*;
 import top.yunzhitan.rpc.tracing.TraceId;
 import top.yunzhitan.rpc.tracing.TracingUtil;
-import top.yunzhitan.transport.RequestMessage;
 
 import java.util.List;
 
@@ -46,9 +45,9 @@ public abstract class AbstractInvoker {
         RpcRequest request = createRequest(methodName,args);
         ClusterInvoker invoker = clusterUtil.findClusterInvoker(methodName);
 
-        InvokeContext invokeContext = new InvokeContext(invoker,returnType,sync);
-        FilterHandler.filter(request,invokeContext);
-        return invokeContext.getResult();
+        ConsumerContext consumerContext = new ConsumerContext(invoker,returnType,sync);
+        ClientFilterHandler.filter(request, consumerContext);
+        return consumerContext.getResult();
     }
 
     private void setTraceId(RequestWrapper message) {
@@ -61,20 +60,6 @@ public abstract class AbstractInvoker {
         }
     }
 
-    private static class FilterHandler {
-
-        private static final FilterChain headFilter;
-
-        static {
-            FilterChain invokeHandler = new DefaultFilterChain(new ClusterInvokerFilter(), null);
-            headFilter = FilterLoader.loadExtFilters(invokeHandler, Filter.Type.CONSUMER);
-        }
-
-        public static <T extends FilterContext> T filter(RpcRequest request, T invokeCtx) throws Throwable {
-            headFilter.doFilter(request, invokeCtx);
-            return invokeCtx;
-        }
-    }
 
 }
 

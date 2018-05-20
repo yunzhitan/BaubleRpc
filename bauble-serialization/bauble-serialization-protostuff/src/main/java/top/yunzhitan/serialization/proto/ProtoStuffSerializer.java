@@ -27,19 +27,10 @@ import top.yunzhitan.serialization.SerializerType;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * Protostuff的序列化/反序列化实现, jupiter中默认的实现.
- *
- * jupiter
- * org.jupiter.serialization.proto
- *
- * @author jiachun.fjc
- */
 public class ProtoStuffSerializer extends Serializer {
 
     private static final ConcurrentMap<Class<?>, Schema<?>> schemaCache = new ConcurrentHashMap<>();
 
-    // 目的是复用 LinkedBuffer 中链表头结点 byte[]
     private static final ThreadLocal<LinkedBuffer> bufThreadLocal = new ThreadLocal<LinkedBuffer>() {
 
         @Override
@@ -49,7 +40,7 @@ public class ProtoStuffSerializer extends Serializer {
     };
 
     @Override
-    public byte code() {
+    public byte getCode() {
         return SerializerType.PROTO_STUFF.value();
     }
 
@@ -90,6 +81,6 @@ public class ProtoStuffSerializer extends Serializer {
 
     @Override
     public String toString() {
-        return "proto_stuff:(code=" + code() + ")";
+        return "proto_stuff:(getCode=" + getCode() + ")";
     }
 }

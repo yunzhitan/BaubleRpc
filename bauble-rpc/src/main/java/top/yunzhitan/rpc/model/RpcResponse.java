@@ -1,7 +1,5 @@
 package top.yunzhitan.rpc.model;
 
-import top.yunzhitan.transport.RequestMessage;
-import top.yunzhitan.transport.ResponseMessage;
 import top.yunzhitan.transport.Status;
 
 import java.io.Serializable;
@@ -10,7 +8,7 @@ public class RpcResponse implements Serializable{
 
     private static final long serialVersionUID = -1126932930252953428L;
 
-    private ResultWrapper result; // 响应结果对象, 也可能是异常对象, 由响应状态决定
+    private ResultWrapper result;
 
     private Status status;
 

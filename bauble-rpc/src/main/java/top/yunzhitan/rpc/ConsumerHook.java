@@ -1,5 +1,4 @@
 package top.yunzhitan.rpc;
-import io.netty.channel.Channel;
 import top.yunzhitan.rpc.model.RpcRequest;
 import top.yunzhitan.rpc.model.RpcResponse;
 import top.yunzhitan.transport.RemotePeer;
@@ -12,10 +11,6 @@ import top.yunzhitan.transport.RemotePeer;
  * 在请求发送时触发 {@link #before(RpcRequest, RemotePeer)} 方法;
  * 在响应回来时触发 {@link #after(RpcResponse, RemotePeer)} 方法.
  *
- * jupiter
- * org.jupiter.rpc
- *
- * @author jiachun.fjc
  */
 public interface ConsumerHook {
 

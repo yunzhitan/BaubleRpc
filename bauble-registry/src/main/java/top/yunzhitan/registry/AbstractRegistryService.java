@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.collection.ConcurrentSet;
-import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.common.Service;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -46,28 +46,25 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     public AbstractRegistryService() {
 
-        registerExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                while(!shutdown.get()) {
-                    RegistryConfig RegistryConfig = null;
-                    try {
-                        RegistryConfig = queue.take();
-                        doRegister(RegistryConfig);
-                    } catch (InterruptedException e) {
-                        logger.warn("register executor interrupted");
-                    } catch (Throwable t) {
-                        if(RegistryConfig != null) {
-                            logger.error("service register {} fail : {}", RegistryConfig.getService(), t);
-                            final RegistryConfig meta = RegistryConfig;
-                            scheduleExecutor.schedule(new Runnable() {
+        registerExecutor.execute(() -> {
+            while(!shutdown.get()) {
+                RegistryConfig RegistryConfig = null;
+                try {
+                    RegistryConfig = queue.take();
+                    doRegister(RegistryConfig);
+                } catch (InterruptedException e) {
+                    logger.warn("addService executor interrupted");
+                } catch (Throwable t) {
+                    if(RegistryConfig != null) {
+                        logger.error("service addService {} fail : {}", RegistryConfig.getService(), t);
+                        final RegistryConfig meta = RegistryConfig;
+                        scheduleExecutor.schedule(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    queue.add(meta);
-                                }
-                            },1,TimeUnit.SECONDS);
-                        }
+                            @Override
+                            public void run() {
+                                queue.add(meta);
+                            }
+                        },1,TimeUnit.SECONDS);
                     }
                 }
             }
@@ -133,6 +130,7 @@ public abstract class AbstractRegistryService implements RegistryService {
             registerExecutor.shutdownNow();
             scheduleExecutor.shutdownNow();
         }
+        destroy();
     }
 
     protected void notify(

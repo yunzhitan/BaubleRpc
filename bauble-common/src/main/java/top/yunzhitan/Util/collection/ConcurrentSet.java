@@ -10,11 +10,7 @@ public class ConcurrentSet<E> extends AbstractSet<E> implements Serializable{
 
     private static final long serialVersionUID = -348237463248234L;
 
-    private ConcurrentMap<E,Boolean> map;
-
-    public ConcurrentSet() {
-        map = new ConcurrentHashMap<>();
-    }
+    private ConcurrentMap<E,Boolean> map = new ConcurrentHashMap<>();
 
     @Override
     public int size() {
@@ -23,7 +19,7 @@ public class ConcurrentSet<E> extends AbstractSet<E> implements Serializable{
 
     @Override
     public boolean add(E e) {
-        return map.putIfAbsent(e,Boolean.TRUE);
+        return map.putIfAbsent(e,Boolean.TRUE) == null;
     }
 
     @Override

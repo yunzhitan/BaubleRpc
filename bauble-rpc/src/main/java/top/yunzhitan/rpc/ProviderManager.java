@@ -2,10 +2,10 @@ package top.yunzhitan.rpc;
 
 import top.yunzhitan.registry.Registry;
 import top.yunzhitan.registry.RegistryService;
+import top.yunzhitan.common.Service;
 import top.yunzhitan.rpc.model.ServiceProvider;
 import top.yunzhitan.rpc.provider.ProviderInitializer;
 import top.yunzhitan.rpc.provider.ProviderInterceptor;
-import top.yunzhitan.transport.Directory;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -29,12 +29,12 @@ public interface ProviderManager extends Registry{
     /**
      * 根据服务目录查找对应服务提供者.
      */
-    ServiceProvider findService(Directory directory);
+    ServiceProvider findService(Service service);
 
     /**
      * 根据服务目录移除对应服务提供者.
      */
-    ServiceProvider removeService(Directory directory);
+    ServiceProvider removeService(Service service);
 
     /**
      * 注册所有服务到本地容器.
@@ -50,18 +50,6 @@ public interface ProviderManager extends Registry{
      * 发布指定服务列表到注册中心.
      */
     void publish(ServiceProvider... serviceProviders);
-
-    /**
-     * 将服务在本地容器注册
-     * @param serviceProvider
-     */
-    void register(ServiceProvider serviceProvider);
-
-    /**
-     * 将服务列表在本地容器注册
-     * @param serviceProviders
-     */
-    void register(ServiceProvider... serviceProviders);
 
     /**
      * 服务提供者初始化完成后再发布服务到注册中心(延迟发布服务).
@@ -87,4 +75,6 @@ public interface ProviderManager extends Registry{
      * 从注册中心把本地所有服务全部下线.
      */
     void unpublishAll();
+
+    void shutdownGracefully();
 }

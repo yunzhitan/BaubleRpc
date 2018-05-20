@@ -14,15 +14,10 @@ public abstract class AbstractFuture<V> {
     /**
      * The number of nanoseconds for which it is faster to spin
      * rather than to use timed park. A rough estimate suffices
-     * to improve responsiveness newFuture very short timeouts.
+     * to improve responsiveness newDefaultFuture very short timeouts.
      */
     protected static final long SPIN_FOR_TIMEOUT_THRESHOLD = 1000L;
 
-    /**
-     * 内部状态转换过程:
-     * NEW -> DOING -> COMPLETED          // 正常完成
-     * NEW -> DOING -> EXCEPTIONAL     // 出现异常
-     */
     private volatile int state;
     protected static final int NEW = 0;
     protected static final int DOING = 1;
@@ -31,7 +26,6 @@ public abstract class AbstractFuture<V> {
 
     // 正常返回结果或者异常对象, 通过get()获取或者抛出异常, 无volatile修饰, 通过state保证可见性
     private Object result;
-    // 存放等待线程的Treiber stack
     @SuppressWarnings("unused")
     private volatile WaitNode waiters;
 
@@ -47,9 +41,6 @@ public abstract class AbstractFuture<V> {
         return state;
     }
 
-    /**
-     * 调用这个方法之前, 需要先读 {@code state} 来保证可见性
-     */
     protected Object result() {
         return result;
     }
@@ -93,11 +84,6 @@ public abstract class AbstractFuture<V> {
 
     protected abstract void done(int state, Object x);
 
-    /**
-     * 返回正常执行结果或者异常
-     *
-     * @param s 状态值
-     */
     @SuppressWarnings("unchecked")
     private V report(int s) throws Throwable {
         Object x = result;
@@ -107,10 +93,6 @@ public abstract class AbstractFuture<V> {
         throw (Throwable) x;
     }
 
-    /**
-     * 1. 唤醒并移除Treiber Stack中所有等待线程
-     * 2. 调用钩子函数done()
-     */
     private void finishCompletion(Object x) {
         // assert state > DOING;
         for (WaitNode q; (q = waiters) != null; ) {
@@ -139,7 +121,7 @@ public abstract class AbstractFuture<V> {
      * 等待任务完成或者超时
      */
     private int awaitDone(boolean timed, long nanos) throws InterruptedException {
-        // The code below is very delicate, to achieve these goals:
+        // The getCode below is very delicate, to achieve these goals:
         // - call nanoTime exactly once for each call to park
         // - if nanos <= 0L, return promptly without allocation or nanoTime
         // - if nanos == Long.MIN_VALUE, don't underflow

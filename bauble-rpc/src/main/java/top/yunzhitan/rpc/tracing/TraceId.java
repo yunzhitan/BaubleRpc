@@ -1,7 +1,6 @@
 package top.yunzhitan.rpc.tracing;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 
 public class TraceId implements Serializable {

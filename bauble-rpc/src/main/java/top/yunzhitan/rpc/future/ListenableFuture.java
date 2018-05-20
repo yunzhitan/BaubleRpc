@@ -29,7 +29,7 @@ public interface ListenableFuture<V> {
      * Removes the first occurrence of the specified listener from this future.
      * The specified listener is no longer notified when this
      * future is done.  If the specified listener is not associated
-     * newFuture this future, this method does nothing and returns silently.
+     * newDefaultFuture this future, this method does nothing and returns silently.
      */
     ListenableFuture<V> removeListener(Listener<V> listener);
 
@@ -37,7 +37,7 @@ public interface ListenableFuture<V> {
      * Removes the first occurrence for each of the listeners from this future.
      * The specified listeners are no longer notified when this
      * future is done.  If the specified listeners are not associated
-     * newFuture this future, this method does nothing and returns silently.
+     * newDefaultFuture this future, this method does nothing and returns silently.
      */
     ListenableFuture<V> removeListeners(Listener<V>... listeners);
 }

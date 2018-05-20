@@ -20,12 +20,6 @@ import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 
-/**
- * jupiter
- * org.jupiter.common.util.internal
- *
- * @author jiachun.fjc
- */
 public class UnsafeIntegerFieldUpdater<U> {
     private final long offset;
     private final Unsafe unsafe;

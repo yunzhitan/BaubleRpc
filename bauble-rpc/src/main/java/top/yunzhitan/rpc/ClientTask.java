@@ -3,7 +3,7 @@ package top.yunzhitan.rpc;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.yunzhitan.rpc.future.DefaultInvokeFuture;
+import top.yunzhitan.rpc.future.FuturePool;
 import top.yunzhitan.rpc.model.ResultWrapper;
 import top.yunzhitan.rpc.model.RpcResponse;
 import top.yunzhitan.serialization.Serializer;
@@ -30,7 +30,10 @@ public class ClientTask implements Runnable {
         RemotePeer remotePeer = new RemotePeer(channel.remoteAddress());
         ResultWrapper result;
         try {
+            long startTime = System.currentTimeMillis();
             result = serializer.readObject(objectBytes,ResultWrapper.class);
+            long endTime = System.currentTimeMillis();
+            System.out.println("反序列化时间：" +(endTime-startTime));
             response.setResult(result);
         } catch (Exception e){
             logger.error("Unserialize Error!! {}",e);
@@ -38,10 +41,9 @@ public class ClientTask implements Runnable {
             result.setResult(e);
         }
 
-        response.setResult(result);
         response.setInvokeId(message.getInvokeId());
         response.setStatus(message.getStatus());
 
-        DefaultInvokeFuture.receiveResponse(remotePeer,response);
+        FuturePool.receiveResponse(remotePeer,response);
     }
 }

@@ -26,8 +26,9 @@ public abstract class AbstractListenableFuture<V> extends AbstractFuture<V> impl
         return this;
     }
 
+    @SafeVarargs
     @Override
-    public ListenableFuture<V> addListeners(Listener<V>... listeners) {
+    public final ListenableFuture<V> addListeners(Listener<V>... listeners) {
 
         synchronized (this) {
             for (Listener<V> listener : listeners) {
@@ -55,8 +56,9 @@ public abstract class AbstractListenableFuture<V> extends AbstractFuture<V> impl
         return this;
     }
 
+    @SafeVarargs
     @Override
-    public ListenableFuture<V> removeListeners(Listener<V>... listeners) {
+    public final ListenableFuture<V> removeListeners(Listener<V>... listeners) {
 
         synchronized (this) {
             for (Listener<V> listener : listeners) {

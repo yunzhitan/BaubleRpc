@@ -23,14 +23,6 @@ import top.yunzhitan.serialization.SerializerType;
 
 import java.io.*;
 
-/**
- * Java自身的序列化/反序列化实现.
- *
- * jupiter
- * org.jupiter.serialization.java
- *
- * @author jiachun.fjc
- */
 public class JavaSerializer extends Serializer {
 
     @SuppressWarnings("unchecked")
@@ -43,7 +35,7 @@ public class JavaSerializer extends Serializer {
     };
 
     @Override
-    public byte code() {
+    public byte getCode() {
         return SerializerType.JAVA.value();
     }
 
@@ -91,6 +83,6 @@ public class JavaSerializer extends Serializer {
 
     @Override
     public String toString() {
-        return "java:(code=" + code() + ")";
+        return "java:(getCode=" + getCode() + ")";
     }
 }

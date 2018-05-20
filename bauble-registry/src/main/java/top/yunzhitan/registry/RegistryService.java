@@ -1,6 +1,6 @@
 package top.yunzhitan.registry;
 
-import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.common.Service;
 
 import java.util.Collection;
 import java.util.Map;
@@ -12,7 +12,7 @@ import java.util.Map;
 public interface RegistryService extends Registry {
 
     /**
-     * register the service to the registry server
+     * addService the service to the registry server
      * @param registryConfig
      */
     void register(RegistryConfig registryConfig);

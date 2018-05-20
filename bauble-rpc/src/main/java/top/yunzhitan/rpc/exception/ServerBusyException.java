@@ -16,12 +16,6 @@
 
 package top.yunzhitan.rpc.exception;
 
-/**
- * Usually it means that the server can not handle the new request.
- *
- * For efficiency this exception will not have a stack trace.
- *
- */
 public class ServerBusyException extends RemoteException {
 
     private static final long serialVersionUID = 4812626729436624336L;

@@ -45,13 +45,7 @@ public class ByteObjectHashMap<V> implements ByteObjectMap<V> {
 
     private final Set<Byte> keySet = new KeySet();
     private final Set<Entry<Byte, V>> entrySet = new EntrySet();
-    private final Iterable<PrimitiveEntry<V>> entries = new Iterable<PrimitiveEntry<V>>() {
-
-        @Override
-        public Iterator<PrimitiveEntry<V>> iterator() {
-            return new PrimitiveIterator();
-        }
-    };
+    private final Iterable<PrimitiveEntry<V>> entries = PrimitiveIterator::new;
 
     public ByteObjectHashMap() {
         this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
@@ -74,7 +68,7 @@ public class ByteObjectHashMap<V> implements ByteObjectMap<V> {
         this.loadFactor = loadFactor;
 
         // Adjust the initial capacity if necessary.
-        int capacity = Ints.findNextPositivePowerOfTwo(initialCapacity);
+        int capacity = 100;
         mask = capacity - 1;
 
         // Allocate the arrays.

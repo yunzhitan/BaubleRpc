@@ -1,21 +1,20 @@
 package top.yunzhitan.rpc;
 
 import top.yunzhitan.Util.BaubleServiceLoader;
-import top.yunzhitan.common.Constants;
 import top.yunzhitan.registry.RegistryConfig;
 import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.registry.RegistryType;
-import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.common.Service;
 import top.yunzhitan.rpc.model.ServiceProvider;
-import top.yunzhitan.rpc.provider.DefaultServiceContainer;
+import top.yunzhitan.rpc.provider.DefaultProviderContainer;
 import top.yunzhitan.rpc.provider.ProviderInitializer;
 import top.yunzhitan.rpc.provider.ProviderInterceptor;
-import top.yunzhitan.rpc.provider.ServiceContainer;
+import top.yunzhitan.rpc.provider.ProviderContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import top.yunzhitan.transport.Directory;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -27,12 +26,12 @@ public class DefaultProviderManager implements ProviderManager {
      * 服务发布接口，服务管理者与注册中心的交互类
      */
     private final RegistryService registryService;
-    private InetSocketAddress socketAddress;
+    private SocketAddress socketAddress;
 
     /**
      * Provider本地容器
      */
-    private final ServiceContainer providerContainer = new DefaultServiceContainer();
+    private final ProviderContainer providerContainer = new DefaultProviderContainer();
 
     /**
      * 全局拦截器
@@ -43,7 +42,7 @@ public class DefaultProviderManager implements ProviderManager {
         this(address,RegistryType.ZOOKEEPER);
     }
 
-    public DefaultProviderManager(InetSocketAddress socketAddress,RegistryType registryType) {
+    public DefaultProviderManager(SocketAddress socketAddress, RegistryType registryType) {
         registryType = registryType == null ? RegistryType.ZOOKEEPER : registryType;
         this.registryService = BaubleServiceLoader.load(RegistryService.class).find(registryType.getValue());
         this.socketAddress = socketAddress;
@@ -65,13 +64,13 @@ public class DefaultProviderManager implements ProviderManager {
     }
 
     @Override
-    public ServiceProvider findService(Directory directory) {
-        return providerContainer.findService(directory.directory());
+    public ServiceProvider findService(Service service) {
+        return providerContainer.findService(service.getDirectory());
     }
 
     @Override
-    public ServiceProvider removeService(Directory directory) {
-        return providerContainer.removeService(directory.directory());
+    public ServiceProvider removeService(Service service) {
+        return providerContainer.removeService(service.getDirectory());
     }
 
     @Override
@@ -80,17 +79,17 @@ public class DefaultProviderManager implements ProviderManager {
     }
 
     @Override
-    public void publish(ServiceProvider serviceWrapper) {
-        Service metadata = serviceWrapper.getMetadata();
+    public void publish(ServiceProvider serviceProvider) {
+        Service service = serviceProvider.getService();
 
-        RegistryConfig meta = new RegistryConfig(socketAddress.getHostName(),socketAddress.getPort());
-        meta.setGroup(metadata.getGroup());
-        meta.setServiceName(metadata.getServiceName());
-        meta.setVersion(metadata.getVersion());
-        meta.setWeight(serviceWrapper.getWeight());
-        meta.setConnCount(Constants.SUGGESTED_CONNECTION_COUNT);
+        if(findService(service) == null) {
+            addServiceProvider(serviceProvider);
+        }
+        RegistryConfig registryConfig = new RegistryConfig(((InetSocketAddress)socketAddress).getHostName(),((InetSocketAddress)socketAddress).getPort());
+        registryConfig.setService(service);
+        registryConfig.setWeight(serviceProvider.getWeight());
 
-        registryService.register(meta);
+        registryService.register(registryConfig);
 
     }
 
@@ -101,16 +100,14 @@ public class DefaultProviderManager implements ProviderManager {
         }
     }
 
-    @Override
-    public void register(ServiceProvider serviceProvider) {
-        providerContainer.registerService(serviceProvider.getMetadata().toString(),serviceProvider);
+    private void addServiceProvider(ServiceProvider serviceProvider) {
+        providerContainer.addService(serviceProvider.getService().getDirectory(),serviceProvider);
     }
 
 
-    @Override
-    public void register(ServiceProvider... serviceProviders) {
+    private void addServiceProvider(ServiceProvider... serviceProviders) {
         for(ServiceProvider serviceProvider : serviceProviders) {
-            register(serviceProvider);
+            addServiceProvider(serviceProvider);
         }
     }
 
@@ -133,16 +130,14 @@ public class DefaultProviderManager implements ProviderManager {
 
     @Override
     public void unpublish(ServiceProvider serviceWrapper) {
-        Service metadata = serviceWrapper.getMetadata();
+        Service service = serviceWrapper.getService();
+        providerContainer.removeService(service.getDirectory());
 
-        RegistryConfig meta = new RegistryConfig(socketAddress.getHostName(),socketAddress.getPort());
-        meta.setGroup(metadata.getGroup());
-        meta.setServiceName(metadata.getServiceName());
-        meta.setVersion(metadata.getVersion());
-        meta.setWeight(serviceWrapper.getWeight());
-        meta.setConnCount(Constants.SUGGESTED_CONNECTION_COUNT);
+        RegistryConfig registryConfig = new RegistryConfig(((InetSocketAddress)socketAddress).getHostName(),((InetSocketAddress)socketAddress).getPort());
+        registryConfig.setService(service);
+        registryConfig.setWeight(serviceWrapper.getWeight());
 
-        registryService.unRegister(meta);
+        registryService.unRegister(registryConfig);
 
     }
 
@@ -153,4 +148,8 @@ public class DefaultProviderManager implements ProviderManager {
         }
     }
 
+    @Override
+    public void shutdownGracefully() {
+        registryService.shutdownGracefully();
+    }
 }

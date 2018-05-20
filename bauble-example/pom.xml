@@ -13,26 +13,35 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>bauble-all</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>bauble-all</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.13</version>
+        </dependency>
+
+        <!-- for test -->
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-mock</artifactId>
+            <version>${opentracing.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
+            <groupId>io.opentracing.brave</groupId>
+            <artifactId>brave-opentracing</artifactId>
+            <version>0.23.0</version>
+            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>net.openhft</groupId>
-            <artifactId>affinity</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
+
     </dependencies>
 </project>

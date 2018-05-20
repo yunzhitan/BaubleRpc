@@ -19,34 +19,24 @@ package top.yunzhitan.serialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.BaubleServiceLoader;
-import top.yunzhitan.Util.collection.ByteObjectHashMap;
-import top.yunzhitan.Util.collection.ByteObjectMap;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceLoader;
 
-/**
- * Holds all serializers.
- *
- * jupiter
- * org.jupiter.serialization
- *
- * @author jiachun.fjc
- */
 public final class SerializerFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SerializerFactory.class);
 
     private static final Map<Byte,Serializer> serializers = new HashMap<>();
 
+    public SerializerFactory() {
+    }
+
     static {
-        BaubleServiceLoader<Serializer> serviceLoader = BaubleServiceLoader.load(Serializer.class);
-        for (Serializer s : serviceLoader) {
-            serializers.put(s.code(), s);
+        Iterable<Serializer> all = BaubleServiceLoader.load(Serializer.class);
+        for (Serializer s : all) {
+            serializers.put(s.getCode(), s);
         }
-        logger.info("Supported serializers: {}.", serializers);
     }
 
     public static Serializer getSerializer(byte code) {
@@ -57,7 +47,7 @@ public final class SerializerFactory {
             if (type != null) {
                 throw new IllegalArgumentException("serializer implementation [" + type.name() + "] not found");
             } else {
-                throw new IllegalArgumentException("unsupported serializer type with code: " + code);
+                throw new IllegalArgumentException("unsupported serializer type with getCode: " + code);
             }
         }
 

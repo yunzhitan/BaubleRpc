@@ -13,9 +13,11 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="bauble-serialization-api" />
     <orderEntry type="module" module-name="bauble-common" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:20.0" level="project" />
+    <orderEntry type="library" name="Maven: org.ow2.asm:asm:6.0" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-log4j12:1.7.7" level="project" />
-    <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.7" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" name="Maven: io.protostuff:protostuff-core:1.6.0" level="project" />
     <orderEntry type="library" name="Maven: io.protostuff:protostuff-api:1.6.0" level="project" />
     <orderEntry type="library" name="Maven: io.protostuff:protostuff-runtime:1.6.0" level="project" />

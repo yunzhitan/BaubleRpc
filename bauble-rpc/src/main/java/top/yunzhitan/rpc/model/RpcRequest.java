@@ -1,7 +1,6 @@
 package top.yunzhitan.rpc.model;
 
-import top.yunzhitan.transport.RequestMessage;
-import top.yunzhitan.rpc.tracing.TraceId;
+import top.yunzhitan.common.Service;
 
 import java.io.Serializable;
 import java.util.Arrays;

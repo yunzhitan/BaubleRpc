@@ -26,18 +26,6 @@ import top.yunzhitan.Util.collection.ConcurrentSet;
 import top.yunzhitan.serialization.Serializer;
 import top.yunzhitan.serialization.SerializerType;
 
-/**
- * Kryo的序列化/反序列化实现.
- *
- * 要注意的是关掉了对存在循环引用的类型的支持, 如果一定要序列化/反序列化循环引用的类型,
- * 可以通过 {@link #setJavaSerializer(Class)} 设置该类型使用Java的序列化/反序列化机制,
- * 对性能有一点影响, 但只是影响一个'点', 不影响'面'.
- *
- * jupiter
- * org.jupiter.serialization.kryo
- *
- * @author jiachun.fjc
- */
 public class KryoSerializer extends Serializer {
 
     private static ConcurrentSet<Class<?>> useJavaSerializerTypes = new ConcurrentSet<>();
@@ -62,7 +50,6 @@ public class KryoSerializer extends Serializer {
         }
     };
 
-    // 目的是复用 Output 中的 byte[]
     private static final ThreadLocal<Output> outputThreadLocal = new ThreadLocal<Output>() {
 
         @Override
@@ -80,7 +67,7 @@ public class KryoSerializer extends Serializer {
     }
 
     @Override
-    public byte code() {
+    public byte getCode() {
         return SerializerType.KRYO.value();
     }
 
@@ -94,7 +81,6 @@ public class KryoSerializer extends Serializer {
         } finally {
             output.clear();
 
-            // 防止hold过大的内存块一直不释放
             if (output.getBuffer().length > MAX_CACHED_BUF_SIZE) {
                 output.setBuffer(new byte[DEFAULT_BUF_SIZE], -1);
             }
@@ -110,6 +96,6 @@ public class KryoSerializer extends Serializer {
 
     @Override
     public String toString() {
-        return "kryo:(code=" + code() + ")";
+        return "kryo:(getCode=" + getCode() + ")";
     }
 }

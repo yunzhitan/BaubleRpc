@@ -1,7 +1,10 @@
 package top.yunzhitan.rpc.invoker;
 
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
-import top.yunzhitan.rpc.model.Service;
+import top.yunzhitan.common.Service;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
 
@@ -13,7 +16,8 @@ public class SyncInvoker extends AbstractInvoker {
         super(appName, metadata, transporter, defaultStrategy, methodSpecialConfigs);
     }
 
-    public Object invoke(Method method,Object[] args) throws Throwable{
+    @RuntimeType
+    public Object invoke(@Origin Method method, @AllArguments Object[] args) throws Throwable{
         return doInvoke(method.getName(),args,method.getReturnType(),true);
     }
 }

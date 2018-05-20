@@ -16,15 +16,6 @@
 
 package top.yunzhitan.serialization;
 
-/**
- * 最多可以扩展到15种不同的序列化/反序列化方式, 取值范围为: 0x01 ~ 0x0f,
- * 每当想增加一种序列化/反序列化方式都要修改这个枚举, 不过我想这个限制是值得的.
- *
- * jupiter
- * org.jupiter.serialization
- *
- * @author jiachun.fjc
- */
 public enum SerializerType {
     PROTO_STUFF ((byte) 0x01),
     HESSIAN     ((byte) 0x02),

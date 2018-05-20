@@ -48,19 +48,15 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
             return sortList;
         }
 
-        Collections.sort(sortList, new Comparator<S>() {
+        sortList.sort((o1, o2) -> {
+            SPI o1_spi = o1.getClass().getAnnotation(SPI.class);
+            SPI o2_spi = o2.getClass().getAnnotation(SPI.class);
 
-            @Override
-            public int compare(S o1, S o2) {
-                SpiMetadata o1_spi = o1.getClass().getAnnotation(SpiMetadata.class);
-                SpiMetadata o2_spi = o2.getClass().getAnnotation(SpiMetadata.class);
+            int o1_priority = o1_spi == null ? 0 : o1_spi.priority();
+            int o2_priority = o2_spi == null ? 0 : o2_spi.priority();
 
-                int o1_priority = o1_spi == null ? 0 : o1_spi.priority();
-                int o2_priority = o2_spi == null ? 0 : o2_spi.priority();
-
-                // 优先级高的排前边
-                return o2_priority - o1_priority;
-            }
+            // 优先级高的排前边
+            return o2_priority - o1_priority;
         });
 
         return sortList;
@@ -72,7 +68,7 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
 
     public S find(String implName) {
         for (S s : providers.values()) {
-            SpiMetadata spi = s.getClass().getAnnotation(SpiMetadata.class);
+            SPI spi = s.getClass().getAnnotation(SPI.class);
             if (spi != null && spi.name().equalsIgnoreCase(implName)) {
                 return s;
             }
@@ -81,7 +77,7 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
             Pair<String, Class<S>> e = lookupIterator.next();
             String name = e.getFirst();
             Class<S> cls = e.getSecond();
-            SpiMetadata spi = cls.getAnnotation(SpiMetadata.class);
+            SPI spi = cls.getAnnotation(SPI.class);
             if (spi != null && spi.name().equalsIgnoreCase(implName)) {
                 try {
                     S provider = service.cast(cls.newInstance());
@@ -286,7 +282,7 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
      */
     @Override
     public String toString() {
-        return "org.jupiter.common.util.JServiceLoader[" + service.getName() + "]";
+        return "top.common.util.BaubleServiceLoader[" + service.getName() + "]";
     }
 }
 
