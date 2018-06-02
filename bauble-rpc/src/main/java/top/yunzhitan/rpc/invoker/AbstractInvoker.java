@@ -1,9 +1,9 @@
 package top.yunzhitan.rpc.invoker;
 
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.rpc.cluster.ClusterInvoker;
 import top.yunzhitan.rpc.cluster.ClusterUtil;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
-import top.yunzhitan.common.Service;
 import top.yunzhitan.rpc.filter.*;
 import top.yunzhitan.rpc.model.*;
 import top.yunzhitan.rpc.tracing.TraceId;
@@ -15,16 +15,16 @@ public abstract class AbstractInvoker {
 
 
     private final String appName;            //应用名称
-    private final Service service;   //服务元数据
+    private final ServiceConfig serviceConfig;   //服务元数据
     private final ClusterUtil clusterUtil;
 
     public AbstractInvoker(String appName,
-                           Service metadata,
+                           ServiceConfig metadata,
                            Transporter transporter,
                            ClusterTypeConfig defaultStrategy,
                            List<MethodSpecialConfig> methodSpecialConfigs) {
         this.appName = appName;
-        this.service = metadata;
+        this.serviceConfig = metadata;
         clusterUtil = new ClusterUtil(transporter, defaultStrategy, methodSpecialConfigs);
     }
 
@@ -36,7 +36,7 @@ public abstract class AbstractInvoker {
         request.setAppName(appName);
         request.setMethodName(methodName);
         request.setArguments(args);
-        request.setService(service);
+        request.setServiceConfig(serviceConfig);
 
         return request;
     }

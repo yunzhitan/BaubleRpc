@@ -1,5 +1,8 @@
 package top.yunzhitan.transport;
 
+import lombok.Data;
+
+@Data
 public class ResponseMessage{
 
     private long invokeId;
@@ -19,40 +22,5 @@ public class ResponseMessage{
         this.invokeId = invokeId;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(byte status) {
-        this.status = Status.parse(status);
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public long getInvokeId() {
-        return invokeId;
-    }
-
-    public void setInvokeId(long invokeId) {
-        this.invokeId = invokeId;
-    }
-
-    public byte getSerializerCode() {
-        return serializerCode;
-    }
-
-    public void setSerializerCode(byte serializerCode) {
-        this.serializerCode = serializerCode;
-    }
-
-    public byte[] getBytes() {
-        return bytes;
-    }
-
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
-    }
 }
 

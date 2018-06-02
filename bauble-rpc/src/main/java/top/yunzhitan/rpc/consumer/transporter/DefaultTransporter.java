@@ -22,7 +22,7 @@ public class DefaultTransporter extends AbstractTransporter {
     public <T> InvokeFuture<T> sendMessage(RpcRequest request, Class<T> returnType) {
         Serializer serializer =  getSerializer();
         RequestMessage message = new RequestMessage();
-        RemotePeer remotePeer = select(request.getService());
+        RemotePeer remotePeer = select(request.getServiceConfig());
         remotePeer.addCallCount();
 
         byte serialize_code = serializer.getCode();

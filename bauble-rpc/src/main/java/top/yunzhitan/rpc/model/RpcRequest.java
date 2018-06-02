@@ -1,10 +1,12 @@
 package top.yunzhitan.rpc.model;
 
-import top.yunzhitan.common.Service;
+import lombok.Data;
+import top.yunzhitan.common.ServiceConfig;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
+@Data
 public class RpcRequest implements Serializable{
 
     private static final long serialVersionUID = -47365345647583434L;
@@ -14,40 +16,8 @@ public class RpcRequest implements Serializable{
 
     private Object[] arguments;
 
-    private Service service;
+    private ServiceConfig serviceConfig;
 
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public Object[] getArguments() {
-        return arguments;
-    }
-
-    public void setArguments(Object[] arguments) {
-        this.arguments = arguments;
-    }
-
-    public Service getService() {
-        return service;
-    }
-
-    public void setService(Service service) {
-        this.service = service;
-    }
 
     @Override
     public String toString() {

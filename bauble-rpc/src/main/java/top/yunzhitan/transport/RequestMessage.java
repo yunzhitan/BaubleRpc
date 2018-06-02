@@ -1,11 +1,13 @@
 package top.yunzhitan.transport;
 
 
+import lombok.Data;
 import top.yunzhitan.Util.id.IdWorker;
 
 /**
  * requestMessage位于传输层，不关注消息体的结构
  */
+@Data
 public class RequestMessage {
     private long invokeId;
     private long timestamp;
@@ -25,40 +27,9 @@ public class RequestMessage {
         this.invokeId = invokeId;
     }
 
-    public long getInvokeId() {
-        return invokeId;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public byte getSerializerCode() {
-        return serializerCode;
-    }
-
-    public void setSerializerCode(byte serializerCode) {
-        this.serializerCode = serializerCode;
-    }
-
-    public byte[] getBytes() {
-        return bytes;
-    }
-
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
-    }
 
     public void nullBytes() {
         bytes = null; // help gc
-    }
-
-    public void setInvokeId(long invokeId) {
-        this.invokeId = invokeId;
     }
 
     public int size() {

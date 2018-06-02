@@ -2,22 +2,22 @@ package top.yunzhitan.rpc.invoker;
 
 import top.yunzhitan.rpc.filter.Filter;
 import top.yunzhitan.rpc.filter.FilterContext;
-import top.yunzhitan.rpc.model.ServiceProvider;
+import top.yunzhitan.rpc.provider.Provider;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ProviderContext implements FilterContext {
 
-    private final ServiceProvider provider;
+    private final Provider provider;
 
     private Object result;                  // 服务调用结果,包括异常
     private Class<?>[] expectCauseTypes;    // 预期内的异常类型
 
-    public ProviderContext(ServiceProvider provider) {
+    public ProviderContext(Provider provider) {
         this.provider = checkNotNull(provider, "provider");
     }
 
-    public ServiceProvider getProvider() {
+    public Provider getProvider() {
         return provider;
     }
 

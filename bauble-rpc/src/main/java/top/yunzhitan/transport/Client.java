@@ -1,8 +1,8 @@
 package top.yunzhitan.transport;
 
+import top.yunzhitan.common.ServiceConfig;
+import top.yunzhitan.registry.ProviderConfig;
 import top.yunzhitan.registry.Registry;
-import top.yunzhitan.registry.RegistryConfig;
-import top.yunzhitan.common.Service;
 import top.yunzhitan.transport.processor.ClientProcessor;
 
 import java.net.SocketAddress;
@@ -46,15 +46,15 @@ public interface Client extends Registry{
      */
     void shutdownGracefully();
 
-    boolean addRemotePeer(Service service,RemotePeer remotePeer);
+    boolean addRemotePeer(ServiceConfig serviceConfig, RemotePeer remotePeer);
 
-    boolean removeRemotePeer(Service service,RemotePeer remotePeer);
+    boolean removeRemotePeer(ServiceConfig serviceConfig, RemotePeer remotePeer);
 
-    RemotePeer getRemotePeer(RegistryConfig registryConfig);
+    RemotePeer getRemotePeer(ProviderConfig providerConfig);
 
-    boolean isServiceAvalible(Service service);
+    boolean isServiceAvalible(ServiceConfig serviceConfig);
 
-    CopyOnWriteArrayList<RemotePeer> getRemotePeerList(Service service);
+    CopyOnWriteArrayList<RemotePeer> getRemotePeerList(ServiceConfig serviceConfig);
 
     void setServiceConsumer(Class<?> interfaceClass, String version);
 

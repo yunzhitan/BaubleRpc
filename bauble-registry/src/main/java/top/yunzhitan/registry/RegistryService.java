@@ -1,6 +1,6 @@
 package top.yunzhitan.registry;
 
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 
 import java.util.Collection;
 import java.util.Map;
@@ -12,36 +12,36 @@ import java.util.Map;
 public interface RegistryService extends Registry {
 
     /**
-     * addService the service to the registry server
-     * @param registryConfig
+     * addService the serviceConfig to the registry server
+     * @param providerConfig
      */
-    void register(RegistryConfig registryConfig);
+    void register(ProviderConfig providerConfig);
 
     /**
-     * unregister the service to the registry server
-     * @param registryConfig
+     * unregister the serviceConfig to the registry server
+     * @param providerConfig
      */
-    void unRegister(RegistryConfig registryConfig);
+    void unRegister(ProviderConfig providerConfig);
 
-    void subscribe(Service registry, NotifyListener listener);
+    void subscribe(ServiceConfig registry, NotifyListener listener);
 
     /**
-     * lookup a service in the local scope
+     * lookup a serviceConfig in the local scope
      * @param metadata
      * @return
      */
-    Collection<RegistryConfig> lookup(Service metadata);
+    Collection<ProviderConfig> lookup(ServiceConfig metadata);
 
     /**
      * list of all the consumers
      * @return
      */
-    Map<Service,Integer> getConsumers();
+    Map<ServiceConfig,Integer> getConsumers();
 
     /**
      * List of the providers
      */
-    Map<RegistryConfig,RegistryState> getProviders();
+    Map<ProviderConfig,RegistryState> getProviders();
 
     /**
      * Return true if the RegidtryService is shutdown

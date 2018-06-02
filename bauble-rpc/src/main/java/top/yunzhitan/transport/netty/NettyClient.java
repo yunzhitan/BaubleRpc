@@ -13,9 +13,9 @@ import io.netty.util.concurrent.FutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.SystemPropertyUtil;
-import top.yunzhitan.registry.RegistryConfig;
+import top.yunzhitan.registry.ProviderConfig;
 import top.yunzhitan.rpc.ConnectionManager;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.rpc.DefaultConnectionManager;
 import top.yunzhitan.transport.*;
 import top.yunzhitan.transport.netty.handler.NettyChannelPoolHandler;
@@ -39,7 +39,7 @@ public class NettyClient implements Client{
     private RemotePeerManager peerManager = new RemotePeerManager();
     private String appName;
     private Bootstrap bootstrap;
-    private Service service;
+    private ServiceConfig serviceConfig;
     private EventLoopGroup workerGroup;
     private int nWorkers = SystemPropertyUtil.AVAILABLE_PROCESSORS;
     private AbstractChannelPoolMap<SocketAddress,ChannelPool> channelPoolMap;
@@ -75,7 +75,7 @@ public class NettyClient implements Client{
         connectionManager = new DefaultConnectionManager(appName,this);
     }
 
-    public void subscribe(Service service) {
+    public void subscribe(ServiceConfig serviceConfig) {
 
     }
 
@@ -108,8 +108,8 @@ public class NettyClient implements Client{
     }
 
     @Override
-    public RemotePeer getRemotePeer(RegistryConfig registryConfig) {
-        return peerManager.findRemotePeer(registryConfig);
+    public RemotePeer getRemotePeer(ProviderConfig providerConfig) {
+        return peerManager.findRemotePeer(providerConfig);
     }
     @Override
     public ClientProcessor getProcessor() {
@@ -122,23 +122,23 @@ public class NettyClient implements Client{
     }
 
     @Override
-    public boolean addRemotePeer(Service service, RemotePeer remotePeer) {
-        CopyOnWriteArrayList<RemotePeer> peerLists = peerManager.find(service);
+    public boolean addRemotePeer(ServiceConfig serviceConfig, RemotePeer remotePeer) {
+        CopyOnWriteArrayList<RemotePeer> peerLists = peerManager.find(serviceConfig);
         boolean success = peerLists.addIfAbsent(remotePeer);
         if(success) {
             peerManager.incrementRefCount(remotePeer);
-            logger.info("Added RemotePeer {} to {}",remotePeer,service.getDirectory());
+            logger.info("Added RemotePeer {} to {}",remotePeer, serviceConfig.getDirectory());
         }
         return success;
     }
 
     @Override
-    public boolean removeRemotePeer(Service service,RemotePeer remotePeer) {
-        CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(service);
+    public boolean removeRemotePeer(ServiceConfig serviceConfig, RemotePeer remotePeer) {
+        CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(serviceConfig);
         boolean remove = peerList.remove(remotePeer);
         if(remove) {
             peerManager.decrementRefCount(remotePeer);
-            logger.warn("Remove RemotePeer {} to {}",remotePeer,service.getDirectory());
+            logger.warn("Remove RemotePeer {} to {}",remotePeer, serviceConfig.getDirectory());
         }
         return remove;
     }
@@ -146,8 +146,8 @@ public class NettyClient implements Client{
 
 
     @Override
-    public boolean isServiceAvalible(Service service) {
-        CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(service);
+    public boolean isServiceAvalible(ServiceConfig serviceConfig) {
+        CopyOnWriteArrayList<RemotePeer> peerList = peerManager.find(serviceConfig);
         for(RemotePeer peer : peerList) {
             if(peer.isAvailable()) {
                 return true;
@@ -172,8 +172,8 @@ public class NettyClient implements Client{
     }
 
     @Override
-    public CopyOnWriteArrayList<RemotePeer> getRemotePeerList(Service service) {
-        return peerManager.find(service);
+    public CopyOnWriteArrayList<RemotePeer> getRemotePeerList(ServiceConfig serviceConfig) {
+        return peerManager.find(serviceConfig);
     }
 
     @Override
@@ -195,15 +195,15 @@ public class NettyClient implements Client{
     @Override
     public void setServiceConsumer(Class<?> interfaceClass, String version) {
         top.yunzhitan.rpc.Service annotation = interfaceClass.getAnnotation(top.yunzhitan.rpc.Service.class);
-        checkNotNull(annotation, interfaceClass + " is not a Service interface");
+        checkNotNull(annotation, interfaceClass + " is not a ServiceConfig interface");
         String serviceName = annotation.name();
         String group = annotation.group();
-        service = new Service(group,serviceName,version);
-        connectionManager.initialization(service);
+        serviceConfig = new ServiceConfig(group,serviceName,version);
+        connectionManager.initialization(serviceConfig);
     }
 
     @Override
     public boolean waitForAvailable(long timeoutMillis) {
-        return connectionManager.waitForAvailable(timeoutMillis,service);
+        return connectionManager.waitForAvailable(timeoutMillis, serviceConfig);
     }
 }

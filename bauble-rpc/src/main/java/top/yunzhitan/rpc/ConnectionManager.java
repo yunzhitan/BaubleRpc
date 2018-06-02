@@ -1,10 +1,10 @@
 package top.yunzhitan.rpc;
 
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.registry.NotifyListener;
-import top.yunzhitan.registry.RegistryConfig;
+import top.yunzhitan.registry.ProviderConfig;
 import top.yunzhitan.registry.Registry;
 import top.yunzhitan.registry.RegistryService;
-import top.yunzhitan.common.Service;
 
 import java.net.SocketAddress;
 import java.util.Collection;
@@ -23,14 +23,14 @@ public interface ConnectionManager extends Registry{
     /**
      * 从本地容器查找服务信息.
      */
-    Collection<RegistryConfig> lookup(Service Service);
+    Collection<ProviderConfig> lookup(ServiceConfig ServiceConfig);
 
     /**
      * 从注册中心订阅一个服务.
      */
-    void subscribe(Service Service, NotifyListener listener);
+    void subscribe(ServiceConfig ServiceConfig, NotifyListener listener);
 
-    void initialization(Service service);
+    void initialization(ServiceConfig serviceConfig);
 
     /**
      * 服务下线通知.
@@ -40,7 +40,7 @@ public interface ConnectionManager extends Registry{
 
     void shutdownGracefully();
 
-    boolean waitForAvailable(long timeoutMillis,Service service);
+    boolean waitForAvailable(long timeoutMillis,ServiceConfig serviceConfig);
 
     void connectRegistryServer(String registryConfig);
 

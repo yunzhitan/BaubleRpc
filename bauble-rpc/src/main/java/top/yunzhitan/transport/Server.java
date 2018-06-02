@@ -1,9 +1,9 @@
 package top.yunzhitan.transport;
 
 
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.registry.RegistryType;
-import top.yunzhitan.common.Service;
-import top.yunzhitan.rpc.model.ServiceProvider;
+import top.yunzhitan.rpc.provider.Provider;
 import top.yunzhitan.transport.processor.ServerProcessor;
 
 import java.net.SocketAddress;
@@ -41,17 +41,17 @@ public interface Server {
 
     ServerProcessor getRequestProcessor();
 
-    ServiceProvider findServiceProvider(Service service);
+    Provider findServiceProvider(ServiceConfig serviceConfig);
 
     /**
      * 发布指定服务到注册中心.
      */
-    void publish(ServiceProvider serviceProvider);
+    void publish(Provider provider);
 
     /**
      * 从注册中心把指定服务下线.
      */
-    void unpublish(ServiceProvider serviceProvider);
+    void unpublish(Provider provider);
 
     void setRegistryType(RegistryType registryType);
 

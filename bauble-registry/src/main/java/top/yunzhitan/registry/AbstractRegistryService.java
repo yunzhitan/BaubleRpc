@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.collection.ConcurrentSet;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -17,7 +17,7 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractRegistryService.class);
 
-    private final LinkedBlockingQueue<RegistryConfig> queue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<ProviderConfig> queue = new LinkedBlockingQueue<>();
     /**
      * 用于接受注册信息的线程
      */
@@ -33,14 +33,14 @@ public abstract class AbstractRegistryService implements RegistryService {
     /**
      * provider注册的服务信息
      */
-    private final ConcurrentSet<RegistryConfig> registered = new ConcurrentSet<>();
-    private final ConcurrentMap<Service, RegisterValue> registries = new ConcurrentHashMap<>();
+    private final ConcurrentSet<ProviderConfig> registered = new ConcurrentSet<>();
+    private final ConcurrentMap<ServiceConfig, RegisterValue> registries = new ConcurrentHashMap<>();
 
     /**
      * consumer订阅的服务信息
      */
-    private final ConcurrentSet<Service> subscribeSet = new ConcurrentSet<>();
-    private final ConcurrentMap<Service, CopyOnWriteArrayList<NotifyListener>> subscribed =
+    private final ConcurrentSet<ServiceConfig> subscribeSet = new ConcurrentSet<>();
+    private final ConcurrentMap<ServiceConfig, CopyOnWriteArrayList<NotifyListener>> subscribed =
             new ConcurrentHashMap<>();
 
 
@@ -48,16 +48,16 @@ public abstract class AbstractRegistryService implements RegistryService {
 
         registerExecutor.execute(() -> {
             while(!shutdown.get()) {
-                RegistryConfig RegistryConfig = null;
+                ProviderConfig ProviderConfig = null;
                 try {
-                    RegistryConfig = queue.take();
-                    doRegister(RegistryConfig);
+                    ProviderConfig = queue.take();
+                    doRegister(ProviderConfig);
                 } catch (InterruptedException e) {
                     logger.warn("addService executor interrupted");
                 } catch (Throwable t) {
-                    if(RegistryConfig != null) {
-                        logger.error("service addService {} fail : {}", RegistryConfig.getService(), t);
-                        final RegistryConfig meta = RegistryConfig;
+                    if(ProviderConfig != null) {
+                        logger.error("serviceConfig addService {} fail : {}", ProviderConfig.getServiceConfig(), t);
+                        final ProviderConfig meta = ProviderConfig;
                         scheduleExecutor.schedule(new Runnable() {
 
                             @Override
@@ -72,28 +72,28 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     @Override
-    public void register(RegistryConfig registry) {
+    public void register(ProviderConfig registry) {
         queue.add(registry);
     }
 
     @Override
-    public void unRegister(RegistryConfig registry) {
+    public void unRegister(ProviderConfig registry) {
         if(!queue.remove(registry)) {
             doUnregister(registry);
         }
     }
 
     @Override
-    public void subscribe(Service service, NotifyListener listener) {
+    public void subscribe(ServiceConfig serviceConfig, NotifyListener listener) {
         CopyOnWriteArrayList<NotifyListener> listeners =
-                subscribed.computeIfAbsent(service,k->new CopyOnWriteArrayList<>());
+                subscribed.computeIfAbsent(serviceConfig, k->new CopyOnWriteArrayList<>());
         listeners.add(listener);
-        subscribeSet.add(service);
-        doSubscribe(service);
+        subscribeSet.add(serviceConfig);
+        doSubscribe(serviceConfig);
     }
 
     @Override
-    public Collection<RegistryConfig> lookup(Service metadata) {
+    public Collection<ProviderConfig> lookup(ServiceConfig metadata) {
             RegisterValue value = registries.get(metadata);
 
             if (value == null) {
@@ -110,12 +110,12 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     @Override
-    public Map<Service, Integer> getConsumers() {
+    public Map<ServiceConfig, Integer> getConsumers() {
         return null;
     }
 
     @Override
-    public Map<RegistryConfig, RegistryState> getProviders() {
+    public Map<ProviderConfig, RegistryState> getProviders() {
         return null;
     }
 
@@ -134,40 +134,40 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     protected void notify(
-            Service service, NotifyEvent event, RegistryConfig... array) {
+            ServiceConfig serviceConfig, NotifyEvent event, ProviderConfig... array) {
 
         if (array == null || array.length == 0) {
             return;
         }
-        CopyOnWriteArrayList<NotifyListener> listeners = subscribed.get(service);
+        CopyOnWriteArrayList<NotifyListener> listeners = subscribed.get(serviceConfig);
         if (listeners != null) {
             for (NotifyListener l : listeners) {
-                for (RegistryConfig registryConfig : array) {
-                    l.notify(registryConfig, event);
+                for (ProviderConfig providerConfig : array) {
+                    l.notify(providerConfig, event);
                 }
             }
         }
     }
 
-    public abstract void doRegister(RegistryConfig RegistryConfig);
+    public abstract void doRegister(ProviderConfig ProviderConfig);
 
-    public abstract void doSubscribe(Service registerMeta);
+    public abstract void doSubscribe(ServiceConfig registerMeta);
 
-    public abstract void doUnregister(RegistryConfig RegistryConfig);
+    public abstract void doUnregister(ProviderConfig ProviderConfig);
 
 
-    public ConcurrentSet<RegistryConfig> getRegistered() {
+    public ConcurrentSet<ProviderConfig> getRegistered() {
         return registered;
     }
 
-    public ConcurrentSet<Service> getSubscribeSet() {
+    public ConcurrentSet<ServiceConfig> getSubscribeSet() {
         return subscribeSet;
     }
 
 
     protected static class RegisterValue {
         private long version = Long.MIN_VALUE;
-        private final Set<RegistryConfig> metaSet = new HashSet<>();
+        private final Set<ProviderConfig> metaSet = new HashSet<>();
         private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(); // segment-lock
     }
 

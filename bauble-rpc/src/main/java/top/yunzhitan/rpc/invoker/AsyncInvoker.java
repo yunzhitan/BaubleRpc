@@ -4,7 +4,7 @@ import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import top.yunzhitan.rpc.consumer.transporter.Transporter;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.rpc.future.InvokeFuture;
 import top.yunzhitan.rpc.model.ClusterTypeConfig;
 import top.yunzhitan.rpc.model.MethodSpecialConfig;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class AsyncInvoker extends AbstractInvoker {
     public AsyncInvoker(String appName,
-                        Service metadata,
+                        ServiceConfig metadata,
                         Transporter transporter,
                         ClusterTypeConfig defaultStrategy,
                         List<MethodSpecialConfig> methodSpecialConfigs) {

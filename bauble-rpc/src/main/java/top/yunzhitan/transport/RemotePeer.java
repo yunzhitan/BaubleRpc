@@ -1,10 +1,13 @@
 package top.yunzhitan.transport;
 
+import lombok.Data;
+
 import java.net.SocketAddress;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Data
 public class RemotePeer {
 
     /**
@@ -32,32 +35,13 @@ public class RemotePeer {
         this.weight = weight;
     }
 
-    public void setAvailable(boolean aval) {
-        available.getAndSet(aval);
-    }
-
     public boolean isAvailable() {
         return available.get();
     }
 
-    public int getWeight() {
-        return weight;
-    }
-
-    public void setWeight(int weight) {
-        this.weight = weight;
-    }
-
-    public SocketAddress getRemoteAddress() {
-        return remoteAddress;
-    }
 
     public void addCallCount() {
         callCount.getAndIncrement();
-    }
-
-    public AtomicInteger getCallCount() {
-        return callCount;
     }
 
     @Override

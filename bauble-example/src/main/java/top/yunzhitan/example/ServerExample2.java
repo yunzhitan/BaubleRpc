@@ -1,6 +1,6 @@
 package top.yunzhitan.example;
 
-import top.yunzhitan.rpc.model.ServiceProvider;
+import top.yunzhitan.rpc.provider.Provider;
 import top.yunzhitan.service.BenchmarkTestImpl;
 import top.yunzhitan.service.ServiceTestImpl;
 import top.yunzhitan.transport.Server;
@@ -18,12 +18,12 @@ public class ServerExample2 {
         try {
             server.connectRegistryServer("127.0.0.1:2181");
 
-            ServiceProvider provider1 = ServiceProvider.ServiceProviderBuilder.newServiceProvider()
+            Provider provider1 = Provider.ServiceProviderBuilder.newServiceProvider()
                     .withServiceProvider(new ServiceTestImpl())
                     .withWeight(100)
                     .build();
 
-            ServiceProvider provider2 = ServiceProvider.ServiceProviderBuilder.newServiceProvider()
+            Provider provider2 = Provider.ServiceProviderBuilder.newServiceProvider()
                     .withServiceProvider(new BenchmarkTestImpl())
                     .withWeight(100)
                     .build();

@@ -5,8 +5,8 @@ import top.yunzhitan.Util.SystemPropertyUtil;
 import top.yunzhitan.registry.RegistryType;
 import top.yunzhitan.rpc.DefaultProviderManager;
 import top.yunzhitan.rpc.ProviderManager;
-import top.yunzhitan.common.Service;
-import top.yunzhitan.rpc.model.ServiceProvider;
+import top.yunzhitan.common.ServiceConfig;
+import top.yunzhitan.rpc.provider.Provider;
 import top.yunzhitan.transport.Server;
 import top.yunzhitan.transport.netty.handler.ProtocolDecoder;
 import top.yunzhitan.transport.netty.handler.ProtocolEncoder;
@@ -116,18 +116,18 @@ public class NettyServer implements Server {
     }
 
     @Override
-    public ServiceProvider findServiceProvider(Service service) {
-        return providerManager.findService(service);
+    public Provider findServiceProvider(ServiceConfig serviceConfig) {
+        return providerManager.findService(serviceConfig);
     }
 
     @Override
-    public void publish(ServiceProvider serviceProvider) {
-        providerManager.publish(serviceProvider);
+    public void publish(Provider provider) {
+        providerManager.publish(provider);
     }
 
     @Override
-    public void unpublish(ServiceProvider serviceProvider) {
-        providerManager.unpublish(serviceProvider);
+    public void unpublish(Provider provider) {
+        providerManager.unpublish(provider);
     }
 
     @Override

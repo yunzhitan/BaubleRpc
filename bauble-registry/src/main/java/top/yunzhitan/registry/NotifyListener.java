@@ -3,5 +3,5 @@ package top.yunzhitan.registry;
 
 public interface NotifyListener {
 
-    void notify(RegistryConfig registryConfig, NotifyEvent event);
+    void notify(ProviderConfig providerConfig, NotifyEvent event);
 }

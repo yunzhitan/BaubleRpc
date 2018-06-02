@@ -21,7 +21,7 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
 
     private static final String PREFIX = "META-INF/services/";
 
-    // the class or interface representing the service being loaded
+    // the class or interface representing the serviceConfig being loaded
     private final Class<S> service;
 
     // the class loader used to locate, load, and instantiate providers
@@ -97,7 +97,7 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
     }
 
     private BaubleServiceLoader(Class<S> service, ClassLoader loader) {
-        this.service = checkNotNull(service, "service interface cannot be null");
+        this.service = checkNotNull(service, "serviceConfig interface cannot be null");
         this.loader = (loader == null) ? ClassLoader.getSystemClassLoader() : loader;
         reload();
     }
@@ -278,7 +278,7 @@ public final class BaubleServiceLoader<S> implements Iterable<S> {
     }
 
     /**
-     * Returns a string describing this service.
+     * Returns a string describing this serviceConfig.
      */
     @Override
     public String toString() {

@@ -2,7 +2,7 @@ package top.yunzhitan.rpc.consumer.proxy;
 
 import com.google.common.collect.Lists;
 import top.yunzhitan.Util.Strings;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.rpc.cluster.ClusterType;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceFactory;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceType;
@@ -90,10 +90,10 @@ public class ProxyFactory<T> {
         return this;
     }
 
-    public ProxyFactory<T> service(Service service) {
-        return group(service.getGroup())
-                .providerName(service.getServiceName())
-                .version(service.getVersion());
+    public ProxyFactory<T> service(ServiceConfig serviceConfig) {
+        return group(serviceConfig.getGroup())
+                .providerName(serviceConfig.getServiceName())
+                .version(serviceConfig.getVersion());
     }
 
     public ProxyFactory<T> client(Client client) {
@@ -157,7 +157,7 @@ public class ProxyFactory<T> {
             serviceName =  annotation.name();
         }
 
-        Service service = new Service(group, serviceName, version);
+        ServiceConfig serviceConfig = new ServiceConfig(group, serviceName, version);
 
         checkArgument(Strings.isNotBlank(group), "group");
         checkArgument(Strings.isNotBlank(serviceName), "serviceName");
@@ -173,13 +173,13 @@ public class ProxyFactory<T> {
         Object handler;
         switch (invokeType) {
             case SYNC:
-                handler = new SyncInvoker(client.getAppName(), service, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new SyncInvoker(client.getAppName(), serviceConfig, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             case ASYNC:
-                handler = new AsyncInvoker(client.getAppName(), service, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new AsyncInvoker(client.getAppName(), serviceConfig, transporter, strategyConfig, methodSpecialConfigs);
                 break;
             default:
-                handler = new AsyncInvoker(client.getAppName(), service, transporter, strategyConfig, methodSpecialConfigs);
+                handler = new AsyncInvoker(client.getAppName(), serviceConfig, transporter, strategyConfig, methodSpecialConfigs);
         }
 
         return Proxies.getDefault().newProxy(interfaceClass, handler);

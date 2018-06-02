@@ -10,7 +10,7 @@ import top.yunzhitan.rpc.future.FuturePool;
 import top.yunzhitan.rpc.future.InvokeFuture;
 import top.yunzhitan.rpc.model.ResultWrapper;
 import top.yunzhitan.rpc.model.RpcResponse;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.serialization.Serializer;
 import top.yunzhitan.transport.*;
 
@@ -31,8 +31,8 @@ public abstract class AbstractTransporter implements Transporter {
         this.loadBalancer = loadBalancer;
     }
 
-    protected RemotePeer select(Service service) {
-        CopyOnWriteArrayList<RemotePeer> peerList = client.getRemotePeerList(service);
+    protected RemotePeer select(ServiceConfig serviceConfig) {
+        CopyOnWriteArrayList<RemotePeer> peerList = client.getRemotePeerList(serviceConfig);
         return loadBalancer.select(peerList);
     }
 

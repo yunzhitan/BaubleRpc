@@ -1,8 +1,10 @@
 package top.yunzhitan.rpc.model;
 
+import lombok.Data;
 import top.yunzhitan.transport.Status;
 
 import java.io.Serializable;
+
 
 public class RpcResponse implements Serializable{
 

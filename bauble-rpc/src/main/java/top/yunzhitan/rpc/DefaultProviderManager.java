@@ -1,11 +1,11 @@
 package top.yunzhitan.rpc;
 
 import top.yunzhitan.Util.BaubleServiceLoader;
-import top.yunzhitan.registry.RegistryConfig;
+import top.yunzhitan.common.ServiceConfig;
+import top.yunzhitan.registry.ProviderConfig;
 import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.registry.RegistryType;
-import top.yunzhitan.common.Service;
-import top.yunzhitan.rpc.model.ServiceProvider;
+import top.yunzhitan.rpc.provider.Provider;
 import top.yunzhitan.rpc.provider.DefaultProviderContainer;
 import top.yunzhitan.rpc.provider.ProviderInitializer;
 import top.yunzhitan.rpc.provider.ProviderInterceptor;
@@ -64,86 +64,86 @@ public class DefaultProviderManager implements ProviderManager {
     }
 
     @Override
-    public ServiceProvider findService(Service service) {
-        return providerContainer.findService(service.getDirectory());
+    public Provider findService(ServiceConfig serviceConfig) {
+        return providerContainer.findService(serviceConfig.getDirectory());
     }
 
     @Override
-    public ServiceProvider removeService(Service service) {
-        return providerContainer.removeService(service.getDirectory());
+    public Provider removeService(ServiceConfig serviceConfig) {
+        return providerContainer.removeService(serviceConfig.getDirectory());
     }
 
     @Override
-    public List<ServiceProvider> allRegisteredServices() {
+    public List<Provider> allRegisteredServices() {
         return providerContainer.getAllService();
     }
 
     @Override
-    public void publish(ServiceProvider serviceProvider) {
-        Service service = serviceProvider.getService();
+    public void publish(Provider provider) {
+        ServiceConfig serviceConfig = provider.getServiceConfig();
 
-        if(findService(service) == null) {
-            addServiceProvider(serviceProvider);
+        if(findService(serviceConfig) == null) {
+            addServiceProvider(provider);
         }
-        RegistryConfig registryConfig = new RegistryConfig(((InetSocketAddress)socketAddress).getHostName(),((InetSocketAddress)socketAddress).getPort());
-        registryConfig.setService(service);
-        registryConfig.setWeight(serviceProvider.getWeight());
+        ProviderConfig providerConfig = new ProviderConfig(((InetSocketAddress)socketAddress).getHostName(),((InetSocketAddress)socketAddress).getPort());
+        providerConfig.setServiceConfig(serviceConfig);
+        providerConfig.setWeight(provider.getWeight());
 
-        registryService.register(registryConfig);
+        registryService.register(providerConfig);
 
     }
 
     @Override
-    public void publish(ServiceProvider... serviceProviders) {
-        for(ServiceProvider provider : serviceProviders) {
+    public void publish(Provider... providers) {
+        for(Provider provider : providers) {
             publish(provider);
         }
     }
 
-    private void addServiceProvider(ServiceProvider serviceProvider) {
-        providerContainer.addService(serviceProvider.getService().getDirectory(),serviceProvider);
+    private void addServiceProvider(Provider provider) {
+        providerContainer.addService(provider.getServiceConfig().getDirectory(), provider);
     }
 
 
-    private void addServiceProvider(ServiceProvider... serviceProviders) {
-        for(ServiceProvider serviceProvider : serviceProviders) {
-            addServiceProvider(serviceProvider);
+    private void addServiceProvider(Provider... providers) {
+        for(Provider provider : providers) {
+            addServiceProvider(provider);
         }
     }
 
     @Override
-    public <T> void publishWithInitializer(ServiceProvider serviceWrapper, ProviderInitializer<T> initializer) {
+    public <T> void publishWithInitializer(Provider serviceWrapper, ProviderInitializer<T> initializer) {
 
     }
 
     @Override
-    public <T> void publishWithInitializer(ServiceProvider serviceWrapper, ProviderInitializer<T> initializer, Executor executor) {
+    public <T> void publishWithInitializer(Provider serviceWrapper, ProviderInitializer<T> initializer, Executor executor) {
 
     }
 
     @Override
     public void publishAll() {
-        for(ServiceProvider provider : allRegisteredServices()) {
+        for(Provider provider : allRegisteredServices()) {
             publish(provider);
         }
     }
 
     @Override
-    public void unpublish(ServiceProvider serviceWrapper) {
-        Service service = serviceWrapper.getService();
-        providerContainer.removeService(service.getDirectory());
+    public void unpublish(Provider serviceWrapper) {
+        ServiceConfig serviceConfig = serviceWrapper.getServiceConfig();
+        providerContainer.removeService(serviceConfig.getDirectory());
 
-        RegistryConfig registryConfig = new RegistryConfig(((InetSocketAddress)socketAddress).getHostName(),((InetSocketAddress)socketAddress).getPort());
-        registryConfig.setService(service);
-        registryConfig.setWeight(serviceWrapper.getWeight());
+        ProviderConfig providerConfig = new ProviderConfig(((InetSocketAddress)socketAddress).getHostName(),((InetSocketAddress)socketAddress).getPort());
+        providerConfig.setServiceConfig(serviceConfig);
+        providerConfig.setWeight(serviceWrapper.getWeight());
 
-        registryService.unRegister(registryConfig);
+        registryService.unRegister(providerConfig);
 
     }
 
     @Override
     public void unpublishAll() {
-        for(ServiceProvider provider : allRegisteredServices()) {
+        for(Provider provider : allRegisteredServices()) {
             unpublish(provider);
         }
     }

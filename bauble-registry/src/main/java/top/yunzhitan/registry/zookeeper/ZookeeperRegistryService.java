@@ -2,10 +2,10 @@ package top.yunzhitan.registry.zookeeper;
 
 import top.yunzhitan.Util.SPI;
 import top.yunzhitan.Util.collection.ConcurrentSet;
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.registry.AbstractRegistryService;
 import top.yunzhitan.registry.NotifyEvent;
-import top.yunzhitan.registry.RegistryConfig;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.registry.ProviderConfig;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.BackgroundCallback;
@@ -31,8 +31,8 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryService.class);
 
-    private final ConcurrentMap<Service,PathChildrenCache> pathChildrenCaches = new ConcurrentHashMap<>();
-    private final ConcurrentMap<SocketAddress,ConcurrentSet<Service>> serviceMetaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ServiceConfig,PathChildrenCache> pathChildrenCaches = new ConcurrentHashMap<>();
+    private final ConcurrentMap<SocketAddress,ConcurrentSet<ServiceConfig>> serviceMetaMap = new ConcurrentHashMap<>();
     private final int sessionTimeoutMs = 60 * 1000;
     private final int connectionTimeoutMs = 15 * 1000;
 
@@ -41,8 +41,8 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
 
 
     @Override
-    public void doRegister(RegistryConfig registryConfig) {
-        String directory = String.format("/bauble/provider/%s", registryConfig.getDirectory());
+    public void doRegister(ProviderConfig providerConfig) {
+        String directory = String.format("/bauble/provider/%s", providerConfig.getDirectory());
 
         try {
             if(configClient.checkExists().forPath(directory) == null) {
@@ -59,30 +59,30 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
                 @Override
                 public void processResult(CuratorFramework curatorFramework, CuratorEvent curatorEvent) {
                     if (curatorEvent.getResultCode() == KeeperException.Code.OK.intValue()) {
-                        getRegistered().add(registryConfig);
+                        getRegistered().add(providerConfig);
                     }
-                    logger.info("Register: {} - {}", registryConfig,curatorEvent);
+                    logger.info("Register: {} - {}", providerConfig,curatorEvent);
                 }
             }).forPath(
                     String.format("%s/%s:%s:%s",
                             directory,
-                            registryConfig.getHost(),
-                            registryConfig.getPort(),
-                            registryConfig.getWeight()));
+                            providerConfig.getHost(),
+                            providerConfig.getPort(),
+                            providerConfig.getWeight()));
         } catch (Exception e) {
             if (logger.isWarnEnabled()) {
-                logger.warn("Create addService meta: {} failed, {}", registryConfig,e);
+                logger.warn("Create addService meta: {} failed, {}", providerConfig,e);
             }
         }
     }
 
     @Override
-    public void doSubscribe(Service service) {
-        PathChildrenCache childrenCache = pathChildrenCaches.get(service);
+    public void doSubscribe(ServiceConfig serviceConfig) {
+        PathChildrenCache childrenCache = pathChildrenCaches.get(serviceConfig);
         if (childrenCache == null) {
-            String directory = String.format("/bauble/provider/%s", service.getDirectory());
+            String directory = String.format("/bauble/provider/%s", serviceConfig.getDirectory());
             PathChildrenCache newChildrenCache = new PathChildrenCache(configClient, directory, false);
-            childrenCache = pathChildrenCaches.putIfAbsent(service, newChildrenCache);
+            childrenCache = pathChildrenCaches.putIfAbsent(serviceConfig, newChildrenCache);
             if (childrenCache == null) {
                 childrenCache = newChildrenCache;
                 childrenCache.getListenable().addListener(new PathChildrenCacheListener() {
@@ -92,28 +92,28 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
 
                         switch (event.getType()) {
                             case CHILD_ADDED: {
-                                RegistryConfig registryConfig = RegistryConfig.parseRegistryConfig(event.getData().getPath());
-                                SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
-                                Service service = registryConfig.getService();
-                                ConcurrentSet<Service> services = serviceMetaMap.computeIfAbsent(address,
+                                ProviderConfig providerConfig = ProviderConfig.parseRegistryConfig(event.getData().getPath());
+                                SocketAddress address = new InetSocketAddress(providerConfig.getHost(), providerConfig.getPort());
+                                ServiceConfig serviceConfig = providerConfig.getServiceConfig();
+                                ConcurrentSet<ServiceConfig> serviceConfigs = serviceMetaMap.computeIfAbsent(address,
                                         k -> new ConcurrentSet<>());
-                                services.add(service);
+                                serviceConfigs.add(serviceConfig);
                                 ZookeeperRegistryService.super.notify(
-                                        service,
+                                        serviceConfig,
                                         NotifyEvent.CHILD_ADDED,
-                                        registryConfig
+                                        providerConfig
                                 );
                                 break;
                             }
                             case CHILD_REMOVED: {
-                                RegistryConfig registryConfig = RegistryConfig.parseRegistryConfig(event.getData().getPath());
-                                SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
-                                Service service = registryConfig.getService();
-                                ConcurrentSet<Service> metaSets = serviceMetaMap.get(address);
-                                metaSets.remove(service);
-                                ZookeeperRegistryService.super.notify(service,
+                                ProviderConfig providerConfig = ProviderConfig.parseRegistryConfig(event.getData().getPath());
+                                SocketAddress address = new InetSocketAddress(providerConfig.getHost(), providerConfig.getPort());
+                                ServiceConfig serviceConfig = providerConfig.getServiceConfig();
+                                ConcurrentSet<ServiceConfig> metaSets = serviceMetaMap.get(address);
+                                metaSets.remove(serviceConfig);
+                                ZookeeperRegistryService.super.notify(serviceConfig,
                                         NotifyEvent.CHILD_REMOVED,
-                                        registryConfig);
+                                        providerConfig);
                             }
                         }
                     }
@@ -139,8 +139,8 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
 
 
     @Override
-    public void doUnregister(RegistryConfig registryConfig) {
-        String directory = String.format("/bauble/provider/%s", registryConfig.getDirectory());
+    public void doUnregister(ProviderConfig providerConfig) {
+        String directory = String.format("/bauble/provider/%s", providerConfig.getDirectory());
 
         try {
             if(configClient.checkExists().forPath(directory) == null) {
@@ -148,7 +148,7 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
             }
         } catch (Exception e) {
             if (logger.isWarnEnabled()) {
-                logger.warn("Check exists newFuture parent path failed {}-{}", registryConfig,e);
+                logger.warn("Check exists newFuture parent path failed {}-{}", providerConfig,e);
             }
         }
 
@@ -157,18 +157,18 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
                 @Override
                 public void processResult(CuratorFramework curatorFramework, CuratorEvent curatorEvent) {
                     if(curatorEvent.getResultCode() == KeeperException.Code.OK.intValue()) {
-                        getRegistered().remove(registryConfig);
+                        getRegistered().remove(providerConfig);
                     }
                 }
             }).forPath(
                     String.format("%s/%s:%s:%s",
                     directory,
-                    registryConfig.getHost(),
-                    String.valueOf(registryConfig.getPort()),
-                    String.valueOf(registryConfig.getWeight())));
+                    providerConfig.getHost(),
+                    String.valueOf(providerConfig.getPort()),
+                    String.valueOf(providerConfig.getWeight())));
         } catch (Exception e) {
             if(logger.isWarnEnabled()) {
-                logger.warn("Delete addService meta: {} failed {}", registryConfig,e);
+                logger.warn("Delete addService meta: {} failed {}", providerConfig,e);
             }
         }
     }
@@ -194,10 +194,10 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
 
                 if(connectionState == ConnectionState.RECONNECTED) {
                     logger.info("Zookeeper connection has been re-established");
-                    for (RegistryConfig meta : getRegistered()) {
+                    for (ProviderConfig meta : getRegistered()) {
                         doRegister(meta);
                     }
-                    for (Service meta : getSubscribeSet()) {
+                    for (ServiceConfig meta : getSubscribeSet()) {
                         doSubscribe(meta);
                     }
                 }
@@ -215,28 +215,28 @@ public class ZookeeperRegistryService extends AbstractRegistryService {
 
                 switch (event.getType()) {
                     case CHILD_ADDED: {
-                        RegistryConfig registryConfig = RegistryConfig.parseRegistryConfig(event.getData().getPath());
-                        SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
-                        Service service = registryConfig.getService();
-                        ConcurrentSet<Service> services = serviceMetaMap.computeIfAbsent(address,
+                        ProviderConfig providerConfig = ProviderConfig.parseRegistryConfig(event.getData().getPath());
+                        SocketAddress address = new InetSocketAddress(providerConfig.getHost(), providerConfig.getPort());
+                        ServiceConfig serviceConfig = providerConfig.getServiceConfig();
+                        ConcurrentSet<ServiceConfig> serviceConfigs = serviceMetaMap.computeIfAbsent(address,
                                 k->new ConcurrentSet<>());
-                        services.add(service);
+                        serviceConfigs.add(serviceConfig);
                         ZookeeperRegistryService.super.notify(
-                                service,
+                                serviceConfig,
                                 NotifyEvent.CHILD_ADDED,
-                                registryConfig
+                                providerConfig
                         );
                         break;
                     }
                     case CHILD_REMOVED: {
-                        RegistryConfig registryConfig = RegistryConfig.parseRegistryConfig(event.getData().getPath());
-                        SocketAddress address = new InetSocketAddress(registryConfig.getHost(), registryConfig.getPort());
-                        Service service = registryConfig.getService();
-                        ConcurrentSet<Service> metaSets = serviceMetaMap.get(address);
-                        metaSets.remove(service);
-                        ZookeeperRegistryService.super.notify(service,
+                        ProviderConfig providerConfig = ProviderConfig.parseRegistryConfig(event.getData().getPath());
+                        SocketAddress address = new InetSocketAddress(providerConfig.getHost(), providerConfig.getPort());
+                        ServiceConfig serviceConfig = providerConfig.getServiceConfig();
+                        ConcurrentSet<ServiceConfig> metaSets = serviceMetaMap.get(address);
+                        metaSets.remove(serviceConfig);
+                        ZookeeperRegistryService.super.notify(serviceConfig,
                                 NotifyEvent.CHILD_REMOVED,
-                                registryConfig);
+                                providerConfig);
                     }
 
                 }

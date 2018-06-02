@@ -1,7 +1,7 @@
 package top.yunzhitan.transport;
 
-import top.yunzhitan.registry.RegistryConfig;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.registry.ProviderConfig;
+import top.yunzhitan.common.ServiceConfig;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -15,10 +15,10 @@ public class RemotePeerManager {
             = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<RemotePeer, AtomicInteger> peerRefCountMap
             = new ConcurrentHashMap<>();
-    private final ConcurrentMap<RegistryConfig,RemotePeer> remotePeerCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<ProviderConfig,RemotePeer> remotePeerCache = new ConcurrentHashMap<>();
 
-    public CopyOnWriteArrayList<RemotePeer> find(Service service) {
-        String _directory = service.getDirectory();
+    public CopyOnWriteArrayList<RemotePeer> find(ServiceConfig serviceConfig) {
+        String _directory = serviceConfig.getDirectory();
         return remotePeerMap.computeIfAbsent(_directory,k-> new CopyOnWriteArrayList<>());
     }
 
@@ -26,13 +26,13 @@ public class RemotePeerManager {
         return remotePeerMap.computeIfAbsent(directory,k-> new CopyOnWriteArrayList<>());
     }
 
-    public RemotePeer findRemotePeer(RegistryConfig registryConfig) {
-        RemotePeer remotePeer = remotePeerCache.get(registryConfig);
+    public RemotePeer findRemotePeer(ProviderConfig providerConfig) {
+        RemotePeer remotePeer = remotePeerCache.get(providerConfig);
         if(remotePeer == null) {
-            SocketAddress address = new InetSocketAddress(registryConfig.getHost(),registryConfig.getPort());
-            int weight = registryConfig.getWeight();
+            SocketAddress address = new InetSocketAddress(providerConfig.getHost(), providerConfig.getPort());
+            int weight = providerConfig.getWeight();
             remotePeer = new RemotePeer(address,weight);
-            remotePeerCache.put(registryConfig,remotePeer);
+            remotePeerCache.put(providerConfig,remotePeer);
         }
         return remotePeer;
     }

@@ -1,9 +1,11 @@
 package top.yunzhitan.rpc.model;
 
+import lombok.Data;
 import top.yunzhitan.rpc.tracing.TraceId;
 
 import java.util.Arrays;
 
+@Data
 public class RequestWrapper {
 
     private String appName;
@@ -18,38 +20,6 @@ public class RequestWrapper {
         this.appName = appName;
         this.methodName = methodName;
         this.arguments = arguments;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public Object[] getArguments() {
-        return arguments;
-    }
-
-    public void setArguments(Object[] arguments) {
-        this.arguments = arguments;
-    }
-
-    public TraceId getTraceId() {
-        return traceId;
-    }
-
-    public void setTraceId(TraceId traceId) {
-        this.traceId = traceId;
     }
 
     @Override

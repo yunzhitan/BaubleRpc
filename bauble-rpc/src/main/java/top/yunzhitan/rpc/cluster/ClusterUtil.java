@@ -20,7 +20,7 @@ public class ClusterUtil {
         this.methodSpecialClusterInvoker = new HashMap<>();
 
         for (MethodSpecialConfig config : methodSpecialConfigs) {
-            ClusterTypeConfig strategy = config.getStrategy();
+            ClusterTypeConfig strategy = config.getTypeConfig();
             if (strategy != null) {
                 methodSpecialClusterInvoker.put(
                         config.getMethodName(),

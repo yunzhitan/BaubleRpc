@@ -1,13 +1,14 @@
-package top.yunzhitan.rpc.model;
+package top.yunzhitan.rpc.provider;
 
+import lombok.Data;
 import top.yunzhitan.Util.Pair;
 import top.yunzhitan.Util.Reflects;
-import top.yunzhitan.common.Service;
+import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.rpc.ServiceImpl;
 import top.yunzhitan.rpc.filter.ServerFilterHandler;
 import top.yunzhitan.rpc.invoker.ProviderContext;
-import top.yunzhitan.rpc.provider.FlowController;
-import top.yunzhitan.rpc.provider.ProviderInterceptor;
+import top.yunzhitan.rpc.model.ResultWrapper;
+import top.yunzhitan.rpc.model.RpcRequest;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -19,45 +20,18 @@ import java.util.concurrent.Executor;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class ServiceProvider {
+@Data
+public class Provider {
 
     private Object serviceProvider;  //服务对象
     private ProviderInterceptor[] interceptors; //服务局部拦截器
     private Class<?> interfaceClass; //接口类型
-    private Service service; //服务信息
+    private ServiceConfig serviceConfig; //服务信息
     private FlowController<RpcRequest> flowController; //私有流量控制
     private int weight;           //权重
     private Executor executor;
     private Map<String, List<Pair<Class<?>[], Class<?>[]>>> extensions; //方法名称及参数，抛出异常类型
 
-
-    public Object getServiceProvider() {
-        return serviceProvider;
-    }
-
-    public ProviderInterceptor[] getInterceptors() {
-        return interceptors;
-    }
-
-    public Class<?> getInterfaceClass() {
-        return interfaceClass;
-    }
-
-    public Service getService() {
-        return service;
-    }
-
-    public int getWeight() {
-        return weight;
-    }
-
-    public Executor getExecutor() {
-        return executor;
-    }
-
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
 
     public Object executeInvoke(RpcRequest request, ProviderContext context) {
         String methodName = request.getMethodName();
@@ -84,7 +58,7 @@ public class ServiceProvider {
         return result;
     }
 
-    public ResultWrapper executeRequest(RpcRequest request) throws Throwable{         // stack copy
+    public ResultWrapper invoke(RpcRequest request) throws Throwable{         // stack copy
 
         ProviderContext invokeCtx = new ProviderContext(this);
 
@@ -109,7 +83,7 @@ public class ServiceProvider {
         private Object serviceProvider;  //服务提供对象
         private ProviderInterceptor[] interceptors; //拦截器
         private Class<?> interfaceClass; //接口类型
-        private Service service; //服务元数据信息
+        private ServiceConfig serviceConfig; //服务元数据信息
         private FlowController<RpcRequest> flowController; //私有流量控制
         private int weight;           //权重
         private Executor executor;       //服务私有线程池
@@ -148,7 +122,7 @@ public class ServiceProvider {
 
                         checkArgument(
                                 interfaceClass == null,
-                                i.getName() + " has a @Service annotation, can't set [interfaceClass] again"
+                                i.getName() + " has a @ServiceConfig annotation, can't set [interfaceClass] again"
                         );
 
                         interfaceClass = i;
@@ -162,7 +136,7 @@ public class ServiceProvider {
             }
             assert implAnnotation != null;
             assert ifAnnotation != null;
-            service = new Service(ifAnnotation.group(),ifAnnotation.name(),implAnnotation.version());
+            serviceConfig = new ServiceConfig(ifAnnotation.group(),ifAnnotation.name(),implAnnotation.version());
             // method's extensions
             //
             // key:     method name
@@ -199,18 +173,18 @@ public class ServiceProvider {
             return this;
         }
 
-        public ServiceProvider build() {
+        public Provider build() {
             preBuild();
-            ServiceProvider serviceProvider = new ServiceProvider();
-            serviceProvider.interceptors = this.interceptors;
-            serviceProvider.interfaceClass = this.interfaceClass;
-            serviceProvider.executor = this.executor;
-            serviceProvider.serviceProvider = this.serviceProvider;
-            serviceProvider.weight = this.weight;
-            serviceProvider.service = this.service;
-            serviceProvider.flowController = this.flowController;
-            serviceProvider.extensions = this.extensions;
-            return serviceProvider;
+            Provider provider = new Provider();
+            provider.interceptors = this.interceptors;
+            provider.interfaceClass = this.interfaceClass;
+            provider.executor = this.executor;
+            provider.serviceProvider = this.serviceProvider;
+            provider.weight = this.weight;
+            provider.serviceConfig = this.serviceConfig;
+            provider.flowController = this.flowController;
+            provider.extensions = this.extensions;
+            return provider;
         }
     }
 

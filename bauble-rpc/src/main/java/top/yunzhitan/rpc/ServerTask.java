@@ -7,7 +7,7 @@ import top.yunzhitan.Util.ThrowUtil;
 import top.yunzhitan.rpc.exception.*;
 import top.yunzhitan.rpc.model.ResultWrapper;
 import top.yunzhitan.rpc.model.RpcRequest;
-import top.yunzhitan.rpc.model.ServiceProvider;
+import top.yunzhitan.rpc.provider.Provider;
 import top.yunzhitan.rpc.provider.FlowController;
 import top.yunzhitan.serialization.Serializer;
 import top.yunzhitan.serialization.SerializerFactory;
@@ -44,14 +44,14 @@ public class ServerTask implements Runnable{
         }
 
         // 查找服务
-        final ServiceProvider serviceProvider = server.findServiceProvider(request.getService());
-        if (serviceProvider == null) {
-            rejectedRequest(Status.SERVICE_NOT_FOUND, new ServiceNotFoundException(String.valueOf(request.getService())));
+        final Provider provider = server.findServiceProvider(request.getServiceConfig());
+        if (provider == null) {
+            rejectedRequest(Status.SERVICE_NOT_FOUND, new ServiceNotFoundException(String.valueOf(request.getServiceConfig())));
             return;
         }
 
         //provider私有流量控制
-        FlowController<RpcRequest> childController = serviceProvider.getFlowController();
+        FlowController<RpcRequest> childController = provider.getFlowController();
         if (childController != null) {
             if(!childController.flowControl(request)){
                 rejectedRequest(Status.PROVIDER_FLOW_CONTROL, new FlowControlException());
@@ -65,10 +65,10 @@ public class ServerTask implements Runnable{
         Serializer serializer = SerializerFactory.getSerializer(s_code);
         ResultWrapper resultWrapper;
         try {
-            resultWrapper = serviceProvider.executeRequest(request);
+            resultWrapper = provider.invoke(request);
             byte[] bytes = serializer.writeObject(resultWrapper);
             responseMessage.setBytes(bytes);
-            responseMessage.setStatus(Status.OK.value());
+            responseMessage.setStatus(Status.OK);
             writeResponse(responseMessage);
             logger.info("write Response on Channel:{}",channel);
         } catch (Throwable t) {

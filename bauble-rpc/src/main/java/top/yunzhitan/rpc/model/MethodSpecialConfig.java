@@ -1,7 +1,10 @@
 package top.yunzhitan.rpc.model;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
+@Data
 public class MethodSpecialConfig implements Serializable {
 
     private static final long serialVersionUID = -3689442191636868738L;
@@ -27,26 +30,6 @@ public class MethodSpecialConfig implements Serializable {
     public MethodSpecialConfig strategy(ClusterTypeConfig strategy) {
         this.typeConfig = strategy;
         return this;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public long getTimeoutMillis() {
-        return timeoutMillis;
-    }
-
-    public void setTimeoutMillis(long timeoutMillis) {
-        this.timeoutMillis = timeoutMillis;
-    }
-
-    public ClusterTypeConfig getStrategy() {
-        return typeConfig;
-    }
-
-    public void setStrategy(ClusterTypeConfig strategy) {
-        this.typeConfig = strategy;
     }
 }
 
