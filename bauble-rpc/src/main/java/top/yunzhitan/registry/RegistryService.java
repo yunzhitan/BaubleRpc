@@ -1,8 +1,10 @@
 package top.yunzhitan.registry;
 
 import top.yunzhitan.common.ServiceConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,18 +14,18 @@ import java.util.Map;
 public interface RegistryService extends Registry {
 
     /**
-     * addService the serviceConfig to the registry server
+     * addService the serviceConfig to the top.yunzhitan.registry server
      * @param providerConfig
      */
     void register(ProviderConfig providerConfig);
 
     /**
-     * unregister the serviceConfig to the registry server
+     * unregister the serviceConfig to the top.yunzhitan.registry server
      * @param providerConfig
      */
     void unRegister(ProviderConfig providerConfig);
 
-    void subscribe(ServiceConfig registry, NotifyListener listener);
+    List<ProviderConfig> subscribe(ServiceConfig registry, NotifyListener listener);
 
     /**
      * lookup a serviceConfig in the local scope
@@ -55,4 +57,9 @@ public interface RegistryService extends Registry {
     void shutdownGracefully();
 
     void destroy();
+
+    /**
+     * 初始化和开始操作
+     */
+    void start(String addressConfig);
 }

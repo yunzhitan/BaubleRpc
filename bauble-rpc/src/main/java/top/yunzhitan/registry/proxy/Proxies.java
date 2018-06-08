@@ -1,10 +1,11 @@
-package top.yunzhitan.rpc.consumer.proxy;
+package top.yunzhitan.registry.proxy;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import top.yunzhitan.Util.ThrowUtil;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
@@ -52,6 +53,15 @@ public enum Proxies {
 
     public static Proxies getDefault() {
         return BYTE_BUDDY;
+    }
+
+    public static Proxies parse(String proxyType) {
+        for(Proxies proxies : values()) {
+            if(proxies.name().equalsIgnoreCase(proxyType)) {
+                return proxies;
+            }
+        }
+        return Proxies.getDefault();
     }
 
     public <T> T newProxy(Class<T> interfaceType, Object handler) {

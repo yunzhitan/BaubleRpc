@@ -32,7 +32,7 @@ public class ClientTest {
         client = new NettyClient("任务测试");
         client.init();
         client.connectRegistryServer("127.0.0.1:2181");
-        client.setServiceConsumer(BenchmarkTest.class,"1.0.1");
+        client.setConsumer(BenchmarkTest.class,"1.0.1");
         if(!client.waitForAvailable(1000)) {
             throw new ConnectFailedException();
         }

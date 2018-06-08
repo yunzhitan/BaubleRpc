@@ -72,10 +72,16 @@ public class RpcOptions {
      * 默认服务version
      */
     public static final String DEFAULT_VERSION                    = "default.version";
+
+    /**
+     * 默认服务名称
+     */
+    public static final String DEFAULT_SERVICENAME                    = "default.servicename";
+
     /**
      * 默认注册中心
      */
-    public static final String DEFAULT_REGISTRY                   = "default.registry";
+    public static final String DEFAULT_REGISTRY                   = "default.top.yunzhitan.registry";
     /**
      * 默认协议
      */
@@ -108,35 +114,35 @@ public class RpcOptions {
     /**
      * 注册中心发现服务（保存注册中心地址的服务）的地址
      */
-    public static final String REGISTRY_INDEX_ADDRESS             = "registry.index.address";
+    public static final String REGISTRY_INDEX_ADDRESS             = "top.yunzhitan.registry.index.address";
     /**
      * 默认连注册中心的超时时间
      */
-    public static final String REGISTRY_CONNECT_TIMEOUT           = "registry.connect.timeout";
+    public static final String REGISTRY_CONNECT_TIMEOUT           = "top.yunzhitan.registry.connect.timeout";
     /**
      * 注册中心等待结果的超时时间
      */
-    public static final String REGISTRY_DISCONNECT_TIMEOUT        = "registry.disconnect.timeout";
+    public static final String REGISTRY_DISCONNECT_TIMEOUT        = "top.yunzhitan.registry.disconnect.timeout";
     /**
      * 注册中心调用超时时间
      */
-    public static final String REGISTRY_INVOKE_TIMEOUT            = "registry.invoke.timeout";
+    public static final String REGISTRY_INVOKE_TIMEOUT            = "top.yunzhitan.registry.invoke.timeout";
     /**
      * 注册中心心跳发送间隔
      */
-    public static final String REGISTRY_HEARTBEAT_PERIOD          = "registry.heartbeat.period";
+    public static final String REGISTRY_HEARTBEAT_PERIOD          = "top.yunzhitan.registry.heartbeat.period";
     /**
      * 注册中心重建连接的间隔
      */
-    public static final String REGISTRY_RECONNECT_PERIOD          = "registry.reconnect.period";
+    public static final String REGISTRY_RECONNECT_PERIOD          = "top.yunzhitan.registry.reconnect.period";
     /**
      * 是否批量操作
      */
-    public static final String REGISTRY_BATCH                     = "registry.batch";
+    public static final String REGISTRY_BATCH                     = "top.yunzhitan.registry.batch";
     /**
      * 批量注册的大小
      */
-    public static final String REGISTRY_BATCH_SIZE                = "registry.batch.size";
+    public static final String REGISTRY_BATCH_SIZE                = "top.yunzhitan.registry.batch.size";
     /**
      * 默认绑定网卡
      */
@@ -264,7 +270,7 @@ public class RpcOptions {
     /**
      * 默认集群策略
      */
-    public static final String CONSUMER_CLUSTER                   = "consumer.cluster";
+    public static final String CONSUMER_CLUSTER                   = "consumer.clusterType";
     /**
      * 默认连接管理器
      */
@@ -379,12 +385,12 @@ public class RpcOptions {
     /**
      * 客户端IO线程池
      */
-    public static final String TRANSPORT_CLIENT_IO_THREADS        = "transport.client.io.threads";
+    public static final String TRANSPORT_CLIENT_IO_THREADS        = "transport.consumerBoy.io.threads";
     /**
      * 客户端IO 比例：用户在代码中使用到了Runnable和ScheduledFutureTask，请合理设置ioRatio的比例，
      * 通过NioEventLoop的setIoRatio(int ioRatio)方法可以设置该值，默认值为50，即I/O操作和用户自定义任务的执行时间比为1：1
      */
-    public static final String TRANSPORT_CLIENT_IO_RATIO          = "transport.client.io.ratio";
+    public static final String TRANSPORT_CLIENT_IO_RATIO          = "transport.consumerBoy.io.ratio";
     /**
      * 客户端IO 比例：用户在代码中使用到了Runnable和ScheduledFutureTask，请合理设置ioRatio的比例，
      * 通过NioEventLoop的setIoRatio(int ioRatio)方法可以设置该值，默认值为50，即I/O操作和用户自定义任务的执行时间比为1：1

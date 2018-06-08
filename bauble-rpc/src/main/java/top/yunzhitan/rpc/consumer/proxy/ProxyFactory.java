@@ -3,6 +3,7 @@ package top.yunzhitan.rpc.consumer.proxy;
 import com.google.common.collect.Lists;
 import top.yunzhitan.Util.Strings;
 import top.yunzhitan.common.ServiceConfig;
+import top.yunzhitan.registry.proxy.Proxies;
 import top.yunzhitan.rpc.cluster.ClusterType;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceFactory;
 import top.yunzhitan.rpc.consumer.loadbalance.LoadBalanceType;
@@ -161,7 +162,7 @@ public class ProxyFactory<T> {
 
         checkArgument(Strings.isNotBlank(group), "group");
         checkArgument(Strings.isNotBlank(serviceName), "serviceName");
-        checkNotNull(client, "client");
+        checkNotNull(client, "consumerBoy");
         checkNotNull(serializerType, "serializerType");
 
 
@@ -188,7 +189,7 @@ public class ProxyFactory<T> {
 
     private Transporter getTransporter(SerializerType serializerType,Client client,LoadBalanceType loadBalanceType) {
         return new DefaultTransporter(SerializerFactory.getSerializer(serializerType.value())
-        ,client, LoadBalanceFactory.loadBalancer(loadBalanceType));
+        ,client, LoadBalanceFactory.getLoadBalancer(loadBalanceType));
     }
 
 

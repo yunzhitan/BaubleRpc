@@ -2,7 +2,7 @@ package top.yunzhitan.rpc;
 
 import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.registry.NotifyListener;
-import top.yunzhitan.registry.ProviderConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 import top.yunzhitan.registry.Registry;
 import top.yunzhitan.registry.RegistryService;
 

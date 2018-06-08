@@ -2,7 +2,7 @@ package top.yunzhitan.rpc;
 
 import top.yunzhitan.Util.BaubleServiceLoader;
 import top.yunzhitan.common.ServiceConfig;
-import top.yunzhitan.registry.ProviderConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.registry.RegistryType;
 import top.yunzhitan.rpc.provider.Provider;
@@ -50,7 +50,7 @@ public class DefaultProviderManager implements ProviderManager {
 
     @Override
     public void connectRegistryServer(String registryConfig) {
-        registryService.connectRegistryServer(registryConfig);
+        registryService.start(registryConfig);
     }
 
     @Override

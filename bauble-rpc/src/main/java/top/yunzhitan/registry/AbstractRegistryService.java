@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.collection.ConcurrentSet;
 import top.yunzhitan.common.ServiceConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -84,12 +85,12 @@ public abstract class AbstractRegistryService implements RegistryService {
     }
 
     @Override
-    public void subscribe(ServiceConfig serviceConfig, NotifyListener listener) {
+    public List<ProviderConfig> subscribe(ServiceConfig serviceConfig, NotifyListener listener) {
         CopyOnWriteArrayList<NotifyListener> listeners =
                 subscribed.computeIfAbsent(serviceConfig, k->new CopyOnWriteArrayList<>());
         listeners.add(listener);
         subscribeSet.add(serviceConfig);
-        doSubscribe(serviceConfig);
+        return doSubscribe(serviceConfig);
     }
 
     @Override
@@ -151,7 +152,7 @@ public abstract class AbstractRegistryService implements RegistryService {
 
     public abstract void doRegister(ProviderConfig ProviderConfig);
 
-    public abstract void doSubscribe(ServiceConfig registerMeta);
+    public abstract List<ProviderConfig> doSubscribe(ServiceConfig registerMeta);
 
     public abstract void doUnregister(ProviderConfig ProviderConfig);
 

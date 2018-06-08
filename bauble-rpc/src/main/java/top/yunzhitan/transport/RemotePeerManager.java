@@ -1,6 +1,6 @@
 package top.yunzhitan.transport;
 
-import top.yunzhitan.registry.ProviderConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 import top.yunzhitan.common.ServiceConfig;
 
 import java.net.InetSocketAddress;

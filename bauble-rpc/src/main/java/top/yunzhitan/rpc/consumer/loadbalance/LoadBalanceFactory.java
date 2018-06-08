@@ -1,19 +1,20 @@
 package top.yunzhitan.rpc.consumer.loadbalance;
 
+import top.yunzhitan.Util.BaubleServiceLoader;
+import top.yunzhitan.rpc.model.ConsumerConfig;
+
 public final class LoadBalanceFactory {
 
-    public static LoadBalancer loadBalancer(LoadBalanceType type) {
-        if (type == LoadBalanceType.RANDOM) {
+    public static LoadBalancer getLoadBalancer(ConsumerConfig consumerConfig) {
+        String loadBalancerType = consumerConfig.getLoadBalancer();
+        LoadBalancer loadBalancer = BaubleServiceLoader.load(LoadBalancer.class).find(loadBalancerType);
+
+        if (loadBalancer != null) {
+            return loadBalancer;
+        } else {
             return RandomLoadBalancer.getInstance();
         }
+    }
 
-        if (type == LoadBalanceType.ROUND_ROBIN) {
-            return RoundRubinBalancer.getInstance();
-        }
-
-        return RoundRubinBalancer.getInstance();
-        }
-
-    private LoadBalanceFactory() {}
 }
 

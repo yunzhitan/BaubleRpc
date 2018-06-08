@@ -1,7 +1,7 @@
 package top.yunzhitan.transport;
 
 import top.yunzhitan.common.ServiceConfig;
-import top.yunzhitan.registry.ProviderConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 import top.yunzhitan.registry.Registry;
 import top.yunzhitan.transport.processor.ClientProcessor;
 
@@ -56,7 +56,7 @@ public interface Client extends Registry{
 
     CopyOnWriteArrayList<RemotePeer> getRemotePeerList(ServiceConfig serviceConfig);
 
-    void setServiceConsumer(Class<?> interfaceClass, String version);
+    void setConsumer(Class<?> interfaceClass, String version);
 
     boolean waitForAvailable(long timeoutMillis);
 

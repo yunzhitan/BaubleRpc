@@ -31,7 +31,7 @@
     <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.19.Final" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-codec:4.1.19.Final" level="project" />
     <orderEntry type="library" name="Maven: io.dropwizard.metrics:metrics-core:4.0.2" level="project" />
-    <orderEntry type="module" module-name="bauble-registry" />
+    <orderEntry type="library" name="Maven: top.yunzhitan:bauble-registry:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.curator:curator-framework:2.9.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.curator:curator-client:2.9.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.zookeeper:zookeeper:3.4.6" level="project" />

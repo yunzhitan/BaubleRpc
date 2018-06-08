@@ -13,7 +13,7 @@ import io.netty.util.concurrent.FutureListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.yunzhitan.Util.SystemPropertyUtil;
-import top.yunzhitan.registry.ProviderConfig;
+import top.yunzhitan.rpc.model.ProviderConfig;
 import top.yunzhitan.rpc.ConnectionManager;
 import top.yunzhitan.common.ServiceConfig;
 import top.yunzhitan.rpc.DefaultConnectionManager;
@@ -193,7 +193,7 @@ public class NettyClient implements Client{
     }
 
     @Override
-    public void setServiceConsumer(Class<?> interfaceClass, String version) {
+    public void setConsumer(Class<?> interfaceClass, String version) {
         top.yunzhitan.rpc.Service annotation = interfaceClass.getAnnotation(top.yunzhitan.rpc.Service.class);
         checkNotNull(annotation, interfaceClass + " is not a ServiceConfig interface");
         String serviceName = annotation.name();

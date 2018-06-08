@@ -3,7 +3,8 @@ package top.yunzhitan.rpc;
 import top.yunzhitan.Util.BaubleServiceLoader;
 import top.yunzhitan.Util.ThrowUtil;
 import top.yunzhitan.common.ServiceConfig;
-import top.yunzhitan.registry.*;
+import top.yunzhitan.registry.NotifyListener;
+import top.yunzhitan.registry.RegistryService;
 import top.yunzhitan.transport.Client;
 import top.yunzhitan.transport.RemotePeer;
 
@@ -117,7 +118,7 @@ public class DefaultConnectionManager implements ConnectionManager {
 
     @Override
     public void connectRegistryServer(String registryConfig) {
-        registryService.connectRegistryServer(registryConfig);
+        registryService.start(registryConfig);
     }
 
 }

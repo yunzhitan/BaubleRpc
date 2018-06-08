@@ -42,9 +42,7 @@ public class ClusterUtil {
                 return new FailFastClusterInvoker(transporter);
             case FAIL_OVER:
                 return new FailOverClusterInvoker(transporter, strategy.getFailoverRetries());
-            case FAIL_SAFE:
-                return new FailSafeClusterInvoker(transporter);
-            default:
+           default:
                 throw new UnsupportedOperationException("strategy: " + strategy);
         }
     }

@@ -1,4 +1,4 @@
-package top.yunzhitan.registry;
+package top.yunzhitan.rpc.model;
 
 
 import top.yunzhitan.Util.Strings;
