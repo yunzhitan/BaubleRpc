@@ -51,26 +51,40 @@ public class DefaultConsumerBoy<T> implements ConsumerBoy<T> {
             return proxyIns;
         }
 
-        String appName = consumerConfig.getAppName();
-        String interfaceName = consumerConfig.getInterfaceId();
+        synchronized (this) {
 
-        if(log.isInfoEnabled()) {
-            log.info(appName, "Refer consumer config : {} with bean id {}", interfaceName, consumerConfig.getConsumerId());
+            String appName = consumerConfig.getAppName();
+            String interfaceName = consumerConfig.getInterfaceId();
+
+            if (log.isInfoEnabled()) {
+                log.info(appName, "Refer consumer config : {} with bean id {}", interfaceName, consumerConfig.getConsumerId());
+            }
+
+
+            try {
+                //build clusterType
+                cluster = ClusterFactory.getCluster(consumerConfig, this);
+                cluster.init();
+
+                //build invoker
+                invoker = InvokerFactory.getInvoker(consumerConfig);
+
+                String proxyType = consumerConfig.getProxy();
+                Class<?> interfaceClass = consumerConfig.getInterfaceClass();
+
+                //build proxy
+                proxyIns = (T) ProxyFactory.buildProxy(proxyType, interfaceClass, invoker);
+            } catch (Exception e) {
+
+                if (cluster != null) {
+                    cluster.dis;
+                    cluster = null;
+                    consumerConfig.set
+                }
+            }
+
+            return proxyIns;
         }
-
-
-        //build clusterType
-        cluster = ClusterFactory.getCluster(consumerConfig,this);
-
-
-        //build proxy
-        invoker = InvokerFactory.getInvoker(consumerConfig);
-
-        String proxyType = consumerConfig.getProxy();
-        Class<?> interfaceClass = consumerConfig.getInterfaceClass();
-        proxyIns = (T) ProxyFactory.buildProxy(proxyType,interfaceClass,invoker);
-
-        return proxyIns;
     }
 
     @Override
